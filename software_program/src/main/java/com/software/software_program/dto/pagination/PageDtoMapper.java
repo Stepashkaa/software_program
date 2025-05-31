@@ -1,4 +1,4 @@
-package com.software.software_program.dto.pagination;
+/* package com.software.software_program.dto.pagination;
 
 import java.util.function.Function;
 
@@ -22,4 +22,4 @@ public class PageDtoMapper {
         dto.setHasPrevious(page.hasPrevious());
         return dto;
     }
-}
+} */
