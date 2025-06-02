@@ -17,7 +17,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "user")
-public class UserEntity extends BaseEntity {
+    public class UserEntity extends BaseEntity {
     @Check(constraints = "length(full_name) >= 1")
     @Column(nullable = false, length = 50)
     private String fullName;
