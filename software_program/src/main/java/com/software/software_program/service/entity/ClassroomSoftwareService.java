@@ -1,4 +1,4 @@
-package com.software.software_program.service;
+package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;

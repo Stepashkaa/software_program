@@ -1,4 +1,4 @@
-package com.software.software_program.dto.pagination;
+package com.software.software_program.web.dto.pagination;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,7 +1,7 @@
-/* package com.software.software_program.dto.pagination;
+package com.software.software_program.web.mapper.pagination;
 
 import java.util.function.Function;
-
+import com.software.software_program.web.dto.pagination.PageDto;
 import org.springframework.data.domain.Page;
 
 public class PageDtoMapper {
@@ -22,4 +22,4 @@ public class PageDtoMapper {
         dto.setHasPrevious(page.hasPrevious());
         return dto;
     }
-} */
+}

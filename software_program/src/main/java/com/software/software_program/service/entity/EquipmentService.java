@@ -1,6 +1,5 @@
-package com.software.software_program.service;
+package com.software.software_program.service.entity;
 
-import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.EquipmentRepository;
 import com.software.software_program.core.eror.NotFoundException;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 

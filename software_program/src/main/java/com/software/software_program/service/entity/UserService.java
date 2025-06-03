@@ -1,7 +1,8 @@
-package com.software.software_program.service;
+package com.software.software_program.service.entity;
 
 import com.software.software_program.core.configuration.Constants;
 import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.utils.ValidationUtils;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -65,6 +66,8 @@ public class UserService extends AbstractEntityService<UserEntity> {
         if (entity == null) {
             throw new IllegalArgumentException("User entity is null");
         }
+        validateStringField(entity.getEmail(), "User email");
+        ValidationUtils.validateEmailFormat(entity.getEmail());
         validateStringField(entity.getFullName(), "Full name");
         validateStringField(entity.getPassword(), "User password");
         if (!entity.getPassword().matches(Constants.PASSWORD_PATTERN)) {

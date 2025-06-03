@@ -1,10 +1,9 @@
-package com.software.software_program.service;
+package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.model.enums.RequestStatus;
-import com.software.software_program.repository.NotificationRepository;
 import com.software.software_program.repository.SoftwareRequestRepository;
 import com.software.software_program.core.eror.NotFoundException;
 import com.software.software_program.repository.UserRepository;
