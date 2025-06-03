@@ -26,7 +26,7 @@ public class SoftwareEntity extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String version;
 
-    @Check(constraints = "length(license_key) >= 1")
+    @Check(constraints = "length(description) >= 1")
     @Column(name = "description", nullable = false, unique = true, length = 100)
     private String description;
 

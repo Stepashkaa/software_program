@@ -11,18 +11,16 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface NotificationRepository extends JpaRepository<NotificationEntity, Long>, JpaSpecificationExecutor<NotificationEntity> {
+
     List<NotificationEntity> findByUserId(Long userId);
 
-    List<NotificationEntity> findByRead(boolean isRead);
+    List<NotificationEntity> findByIsRead(boolean isRead);
 
-    @Query("""
-        SELECT n FROM NotificationEntity n
-        WHERE (:userId IS NULL OR n.user.id = :userId)
-          AND (:isRead IS NULL OR n.read = :isRead)
-    """)
-    Page<NotificationEntity> findAllByFilters(
-            @Param("userId") Long userId,
-            @Param("isRead") Boolean isRead,
-            Pageable pageable
-    );
+    List<NotificationEntity> findByUserIdAndIsRead(Long userId, boolean isRead);
+
+    Page<NotificationEntity> findByUserId(Long userId, Pageable pageable);
+
+    Page<NotificationEntity> findByIsRead(boolean isRead, Pageable pageable);
+
+    Page<NotificationEntity> findByUserIdAndIsRead(Long userId, boolean isRead, Pageable pageable);
 }

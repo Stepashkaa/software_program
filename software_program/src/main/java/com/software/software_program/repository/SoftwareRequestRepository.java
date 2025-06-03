@@ -18,6 +18,16 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
 
     List<SoftwareRequestEntity> findByUser(UserEntity user);
 
+    // Choose one of these two options:
+
+    // Option 1: Use UserEntity
+    List<SoftwareRequestEntity> findByStatusAndUser(RequestStatus status, UserEntity user);
+
+    // OR Option 2: Use userId
+    List<SoftwareRequestEntity> findByStatusAndUserId(RequestStatus status, Long userId);
+
+    List<SoftwareRequestEntity> findByUserId(Long userId);
+
     @Query("""
         SELECT sr FROM SoftwareRequestEntity sr
         JOIN sr.user u

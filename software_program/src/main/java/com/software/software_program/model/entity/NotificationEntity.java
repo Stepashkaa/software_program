@@ -21,13 +21,17 @@ public class NotificationEntity extends BaseEntity {
     @Column(nullable = false)
     private LocalDateTime sentDate;
 
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead; // Альтернативный вариант
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    public NotificationEntity(String message, LocalDateTime sentDate, UserEntity user) {
+    public NotificationEntity(String message, LocalDateTime sentDate, UserEntity user, boolean isRead) {
         this.message = message;
         this.sentDate = sentDate;
         this.user = user;
+        this.isRead = isRead;
     }
 }

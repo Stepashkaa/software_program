@@ -3,6 +3,8 @@ package com.software.software_program.service;
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.ReportEntity;
+import com.software.software_program.model.entity.SoftwareEntity;
+import com.software.software_program.repository.ClassroomSoftwareRepository;
 import com.software.software_program.repository.DepartmentRepository;
 import com.software.software_program.core.eror.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +23,8 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     private final DepartmentRepository repository;
+    private final ClassroomSoftwareRepository classroomSoftwareRepo;
+    private final DepartmentRepository departmentRepository;
 
     @Transactional(readOnly = true)
     public List<DepartmentEntity> getAll(String name) {
@@ -65,6 +70,20 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         final DepartmentEntity existsEntity = get(id);
         repository.delete(existsEntity);
         return existsEntity;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClassroomEntity> getClassrooms(Long departmentId) {
+        return get(departmentId).getClassrooms().stream().toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<SoftwareEntity> getSoftwareUsed(Long departmentId, int months) {
+        LocalDate end = LocalDate.now();
+        LocalDate start = end.minusMonths(months);
+        return classroomSoftwareRepo.findUniqueSoftwareByDepartmentAndPeriod(
+                departmentId, start, end
+        );
     }
 
     @Override

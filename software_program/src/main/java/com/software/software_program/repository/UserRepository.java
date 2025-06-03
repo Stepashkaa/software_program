@@ -2,7 +2,9 @@ package com.software.software_program.repository;
 
 import com.software.software_program.model.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
