@@ -1,6 +1,7 @@
 package com.software.software_program.web.dto.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.software.software_program.core.validation.IsoDate;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class NotificationDto {
     private String message;
 
     @NotNull
+    @IsoDate
     private LocalDateTime sentDate;
 
     private boolean isRead;

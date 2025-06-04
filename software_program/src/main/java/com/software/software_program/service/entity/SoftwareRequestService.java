@@ -54,6 +54,11 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
                 .orElseThrow(() -> new NotFoundException(SoftwareRequestEntity.class, id));
     }
 
+    @Transactional(readOnly = true)
+    public List<SoftwareRequestEntity> getByIds(List<Long> ids) {
+        return softwareRequestRepo.findAllById(ids);
+    }
+
     @Transactional
     public SoftwareRequestEntity create(LocalDate requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
         validateFields(requestDate, description, user, classroomSoftware);

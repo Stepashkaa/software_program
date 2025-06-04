@@ -44,6 +44,11 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
                 .orElseThrow(() -> new NotFoundException(ClassroomEntity.class, id));
     }
 
+    @Transactional(readOnly = true)
+    public List<ClassroomEntity> getByIds(List<Long> ids) {
+        return classroomRepository.findAllById(ids);
+    }
+
     @Transactional
     public ClassroomEntity create(ClassroomEntity entity) {
         validate(entity, true);

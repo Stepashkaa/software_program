@@ -96,6 +96,13 @@
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>local.jasperFont</groupId>
+			<artifactId>local.jasperFont</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${basedir}/src/main/resources/static/report/dejavu-sans.jar</systemPath>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -42,6 +42,11 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     }
 
     @Transactional(readOnly = true)
+    public List<DepartmentEntity> getByIds(List<Long> ids) {
+        return repository.findAllById(ids);
+    }
+
+    @Transactional(readOnly = true)
     public DepartmentEntity get(long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new NotFoundException(DepartmentEntity.class, id));

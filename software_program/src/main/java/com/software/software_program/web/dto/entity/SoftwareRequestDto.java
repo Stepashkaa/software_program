@@ -1,6 +1,7 @@
 package com.software.software_program.web.dto.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.software.software_program.core.validation.IsoDate;
 import com.software.software_program.model.enums.RequestStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +19,7 @@ public class SoftwareRequestDto {
     private Long id;
 
     @NotNull
+    @IsoDate
     private LocalDate requestDate;
 
     @NotNull
@@ -39,5 +41,5 @@ public class SoftwareRequestDto {
     private Long classroomSoftwareId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String classroomSoftwareName;
+    private String softwareName;
 }

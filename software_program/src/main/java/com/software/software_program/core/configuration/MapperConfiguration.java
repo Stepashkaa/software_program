@@ -19,27 +19,25 @@ public class MapperConfiguration {
     ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        modelMapper.typeMap(ClassroomEntity.class, ClassroomDto.class)
-                .addMappings(mapper -> {
+        modelMapper.typeMap(ClassroomEntity.class, ClassroomDto.class).addMappings(mapper -> {
                     mapper.skip(ClassroomDto::setEquipmentNames);
                     mapper.skip(ClassroomDto::setClassroomSoftwareNames);
                 });
 
-        modelMapper.typeMap(DepartmentEntity.class, DepartmentDto.class)
-                .addMappings(mapper -> {
+        modelMapper.typeMap(DepartmentEntity.class, DepartmentDto.class).addMappings(mapper -> {
                     mapper.skip(DepartmentDto::setClassroomNames);
                     mapper.skip(DepartmentDto::setReportNames);
                 });
 
-        modelMapper.typeMap(SoftwareEntity.class, SoftwareDto.class)
-                .addMappings(mapper -> {
+        modelMapper.typeMap(SoftwareEntity.class, SoftwareDto.class).addMappings(mapper -> {
                     mapper.skip(SoftwareDto::setClassroomSoftwareNames);
                 });
 
-        modelMapper.typeMap(SoftwareRequestEntity.class, SoftwareRequestDto.class)
-                .addMappings(mapper -> {
-                    mapper.skip(SoftwareRequestDto::setUserName);
-                    mapper.skip(SoftwareRequestDto::setClassroomSoftwareName);
+        modelMapper.typeMap(SoftwareRequestEntity.class, SoftwareRequestDto.class).addMappings(mapper -> {
+                    mapper.map(src -> src.getUser().getFullName(),
+                            SoftwareRequestDto::setUserName);
+                    mapper.map(src -> src.getClassroomSoftware().getSoftware().getName(),
+                            SoftwareRequestDto::setSoftwareName);
                 });
 
         return modelMapper;
