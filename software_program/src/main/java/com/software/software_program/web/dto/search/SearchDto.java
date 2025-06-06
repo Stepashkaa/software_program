@@ -1,12 +1,10 @@
 package com.software.software_program.web.dto.search;
 
-import com.software.software_program.web.dto.entity.ClassroomDto;
-import com.software.software_program.web.dto.entity.DepartmentDto;
-import com.software.software_program.web.dto.entity.SoftwareDto;
-import com.software.software_program.web.dto.entity.SoftwareRequestDto;
+import com.software.software_program.web.dto.entity.*;
 import com.software.software_program.web.dto.pagination.PageDto;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -14,13 +12,15 @@ import java.util.List;
 @Setter
 public class SearchDto {
 
-    private PageDto<ClassroomDto> classrooms;
+    private Page<ClassroomDto> classrooms;
 
-    private PageDto<DepartmentDto> departments;
+    private Page<DepartmentDto> departments;
 
-    private PageDto<SoftwareDto> software;
+    private Page<SoftwareDto> software;
 
-    private PageDto<SoftwareRequestDto> softwareRequests;
+    private Page<FacultyDto> faculties;
+
+    private Page<SoftwareRequestDto> softwareRequests;
 
     private List<SoftwareDto> softwareUsedByDepartment;
 

@@ -7,12 +7,15 @@ import com.software.software_program.repository.ClassroomRepository;
 import com.software.software_program.core.eror.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -33,9 +36,18 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     @Transactional(readOnly = true)
     public List<ClassroomEntity> getAll(String name) {
         if (name == null || name.isEmpty()) {
-            return classroomRepository.findAll();
+            return StreamSupport.stream(classroomRepository.findAll().spliterator(), false).toList();
         }
         return classroomRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ClassroomEntity> getAll(String name, int page, int size) {
+        final Pageable pageRequest = PageRequest.of(page, size);
+        if (name == null || name.isBlank()) {
+            return classroomRepository.findAll(pageRequest);
+        }
+        return classroomRepository.findByNameContainingIgnoreCase(name, pageRequest);
     }
 
     @Transactional(readOnly = true)
@@ -46,7 +58,8 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
 
     @Transactional(readOnly = true)
     public List<ClassroomEntity> getByIds(List<Long> ids) {
-        return classroomRepository.findAllById(ids);
+        return StreamSupport.stream(classroomRepository.findAllById(ids).spliterator(), false)
+                .collect(Collectors.toList());
     }
 
     @Transactional

@@ -26,7 +26,7 @@ public class MapperConfiguration {
 
         modelMapper.typeMap(DepartmentEntity.class, DepartmentDto.class).addMappings(mapper -> {
                     mapper.skip(DepartmentDto::setClassroomNames);
-                    mapper.skip(DepartmentDto::setReportNames);
+//                    mapper.skip(DepartmentDto::setReportNames);
                 });
 
         modelMapper.typeMap(SoftwareEntity.class, SoftwareDto.class).addMappings(mapper -> {

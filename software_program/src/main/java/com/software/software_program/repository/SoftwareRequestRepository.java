@@ -1,5 +1,6 @@
 package com.software.software_program.repository;
 
+import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.model.enums.RequestStatus;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,4 +44,12 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
             @Param("classroomSoftwareId") Long classroomSoftwareId,
             Pageable pageable
     );
+    @Query("SELECT sr FROM SoftwareRequestEntity sr WHERE " +
+            "sr.user.id = :userId AND " +
+            "sr.classroomSoftware.id = :classroomSoftwareId AND " +
+            "sr.requestDate = :requestDate")
+    Optional<SoftwareRequestEntity> findByUserClassroomAndDate(
+            @Param("userId") Long userId,
+            @Param("classroomSoftwareId") Long classroomSoftwareId,
+            @Param("requestDate") Date requestDate);
 }

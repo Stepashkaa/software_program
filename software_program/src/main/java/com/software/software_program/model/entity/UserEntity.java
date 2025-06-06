@@ -9,12 +9,13 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Check;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "app_users")
     public class UserEntity extends BaseEntity {
@@ -23,6 +24,7 @@ import java.util.Set;
     private String fullName;
 
     @Check(constraints = "length(email) >= 1")
+    @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true, columnDefinition = "text")
     private String email;
 
@@ -71,4 +73,5 @@ import java.util.Set;
         softwareRequests.remove(softwareRequest);
         softwareRequest.setUser(null);
     }
+
 }

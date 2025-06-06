@@ -6,8 +6,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
+import org.hibernate.annotations.NaturalId;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -16,18 +18,20 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "classroom_software")
 public class ClassroomSoftwareEntity extends BaseEntity {
+    @NaturalId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "classroom_id", nullable = false)
     private ClassroomEntity classroom;
 
+    @NaturalId
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "software_id", nullable = false)
     private SoftwareEntity software;
 
     @Column(nullable = false)
-    private LocalDate installationDate;
+    private Date installationDate;
 
-    public ClassroomSoftwareEntity(ClassroomEntity classroom, SoftwareEntity software, LocalDate installationDate) {
+    public ClassroomSoftwareEntity(ClassroomEntity classroom, SoftwareEntity software, Date installationDate) {
         this.classroom = classroom;
         this.software = software;
         this.installationDate = installationDate;

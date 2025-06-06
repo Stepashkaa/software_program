@@ -15,7 +15,7 @@ import java.util.Optional;
 public interface EquipmentRepository extends JpaRepository<EquipmentEntity, Long>, JpaSpecificationExecutor<EquipmentEntity> {
     Optional<EquipmentEntity> findBySerialNumberIgnoreCase(String serialNumber);
 
-    List<EquipmentEntity> findByClassroom(ClassroomEntity classroom);
+    List<EquipmentEntity> findByClassroom(@Param("classroom") ClassroomEntity classroom);
 
     @Query("""
         SELECT e FROM EquipmentEntity e

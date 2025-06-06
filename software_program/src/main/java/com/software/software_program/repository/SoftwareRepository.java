@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface SoftwareRepository extends JpaRepository<SoftwareEntity, Long>, JpaSpecificationExecutor<SoftwareEntity> {
-    Optional<SoftwareEntity> findByNameIgnoreCase(String name);
+    Optional<SoftwareEntity> findByNameIgnoreCase(@Param("name") String name);
 
-    List<SoftwareEntity> findByNameContainingIgnoreCase(String name);
+    List<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name);
 
-    Page<SoftwareEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 
     @Query("""
         SELECT s FROM SoftwareEntity s

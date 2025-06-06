@@ -53,7 +53,7 @@ public interface ClassroomSoftwareRepository extends JpaRepository<ClassroomSoft
           AND cs.installationDate BETWEEN :start AND :end
         ORDER BY cs.software.name
     """)
-    List<SoftwareEntity> findUniqueSoftwareByDepartmentAndPeriod(
+    List<ClassroomSoftwareEntity> findUniqueSoftwareByDepartmentAndPeriod(
             @Param("departmentId") Long departmentId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end

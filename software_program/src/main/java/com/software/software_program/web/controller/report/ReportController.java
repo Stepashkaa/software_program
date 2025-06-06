@@ -20,7 +20,7 @@ public class ReportController {
     private final ReportExporter exporter;
     private final PdfExportStrategy pdfStrategy;
 //    private final XlsxExportStrategy xlsxStrategy;
-    private final DocxExportStrategy docxStrategy;
+//    private final DocxExportStrategy docxStrategy;
 
     @PostMapping("/download/pdf/{reportType}")
     public ResponseEntity<byte[]> downloadPdf(@PathVariable ReportType reportType, @RequestBody ReportDto reportDto) throws JRException {
@@ -33,16 +33,16 @@ public class ReportController {
                 .body(file);
     }
 
-    @PostMapping("/download/docx/{reportType}")
-    public ResponseEntity<byte[]> downloadDocx(@PathVariable ReportType reportType, @RequestBody ReportDto reportDto) throws Exception {
-        JasperPrint print = getJasperPrint(reportType, reportDto, false);
-        exporter.setStrategy(docxStrategy);
-        byte[] file = exporter.export(print);
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.docx")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(file);
-    }
+//    @PostMapping("/download/docx/{reportType}")
+//    public ResponseEntity<byte[]> downloadDocx(@PathVariable ReportType reportType, @RequestBody ReportDto reportDto) throws Exception {
+//        JasperPrint print = getJasperPrint(reportType, reportDto, false);
+//        exporter.setStrategy(docxStrategy);
+//        byte[] file = exporter.export(print);
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.docx")
+//                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+//                .body(file);
+//    }
 
 //    @PostMapping("/download/xlsx/{reportType}")
 //    public ResponseEntity<byte[]> downloadXlsx(@PathVariable ReportType reportType, @RequestBody ReportDto reportDto) throws JRException {

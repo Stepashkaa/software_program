@@ -1,10 +1,12 @@
 package com.software.software_program.service.entity;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.EquipmentRepository;
 import com.software.software_program.core.eror.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,10 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
 
     @Transactional(readOnly = true)
     public List<EquipmentEntity> getAll(String type, String serialNumber, Long classroomId) {
-        return StreamSupport.stream(equipmentRepository.findAll().spliterator(), false)
+        if (type == null && serialNumber == null && classroomId == null) {
+            return equipmentRepository.findAll();
+        }
+        return equipmentRepository.findAll().stream()
                 .filter(equipment -> matchesFilters(equipment, type, serialNumber, classroomId))
                 .collect(Collectors.toList());
     }

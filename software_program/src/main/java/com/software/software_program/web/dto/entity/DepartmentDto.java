@@ -33,9 +33,4 @@ public class DepartmentDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> classroomNames;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<Long> reportIds;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<String> reportNames;
 }

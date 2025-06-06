@@ -13,7 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -60,33 +60,36 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     }
 
     @Transactional
-    public SoftwareRequestEntity create(LocalDate requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
-        validateFields(requestDate, description, user, classroomSoftware);
+    public SoftwareRequestEntity create(Date requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
         SoftwareRequestEntity entity = new SoftwareRequestEntity(requestDate, RequestStatus.PENDING, description, user, classroomSoftware);
+        validate(entity, true);
         return softwareRequestRepo.save(entity);
     }
 
     @Transactional
     public SoftwareRequestEntity update(long id, RequestStatus status, String description) {
-        // Проверка описания
         if (description != null) {
             validateStringField(description, "Description");
         }
+
         SoftwareRequestEntity existsEntity = get(id);
+
         if (status != null) {
             existsEntity.setStatus(status);
 
-            // Проверка, что пользователь существует
             if (existsEntity.getUser() == null) {
                 throw new IllegalArgumentException("User must not be null");
             }
-            // Отправка уведомления о изменении статуса
+
             String message = String.format("Статус вашей заявки изменен на '%s'", status);
             notificationService.sendNotification(message, existsEntity.getUser());
         }
+
         if (description != null) {
             existsEntity.setDescription(description);
         }
+
+        validate(existsEntity, false);
         return softwareRequestRepo.save(existsEntity);
     }
 
@@ -102,19 +105,33 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
         if (entity == null) {
             throw new IllegalArgumentException("SoftwareRequest entity is null");
         }
-        validateFields(entity.getRequestDate(), entity.getDescription(), entity.getUser(), entity.getClassroomSoftware());
-    }
 
-    private void validateFields(LocalDate requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
-        if (requestDate == null || requestDate.isAfter(LocalDate.now())) {
+        if (entity.getRequestDate() == null || entity.getRequestDate().after(new Date())) {
             throw new IllegalArgumentException("Request date must not be null or in the future");
         }
-        validateStringField(description, "Description");
-        if (user == null) {
+
+        validateStringField(entity.getDescription(), "Description");
+
+        if (entity.getUser() == null) {
             throw new IllegalArgumentException("User must not be null");
         }
-        if (classroomSoftware == null) {
+
+        if (entity.getClassroomSoftware() == null) {
             throw new IllegalArgumentException("ClassroomSoftware must not be null");
+        }
+
+        if (uniqueCheck) {
+            boolean exists = softwareRequestRepo.findByUserClassroomAndDate(
+                    entity.getUser().getId(),
+                    entity.getClassroomSoftware().getId(),
+                    entity.getRequestDate()
+            ).isPresent();
+
+            if (exists) {
+                throw new IllegalArgumentException(
+                        "Software request for this user, classroom software and date already exists"
+                );
+            }
         }
     }
 }

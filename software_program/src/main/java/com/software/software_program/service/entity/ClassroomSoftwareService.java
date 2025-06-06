@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -20,15 +21,13 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
     private final NotificationService notificationService;
 
     @Transactional
-    public ClassroomSoftwareEntity create(ClassroomEntity classroom, SoftwareEntity software, LocalDate installationDate) {
-        validate(classroom, software, installationDate);
-        ClassroomSoftwareEntity entity = new ClassroomSoftwareEntity(classroom, software, installationDate);
+    public ClassroomSoftwareEntity create(ClassroomSoftwareEntity entity) {
+        validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
         ClassroomSoftwareEntity createdEntity = classroomSoftwareRepo.save(entity);
 
-        // Отправка уведомлений о привязке ПО к аудитории
         String message = String.format("Программное обеспечение '%s' установлено в аудитории '%s'",
-                software.getName(), classroom.getName());
-        notificationService.sendNotification(message, null); // Уведомление для администраторов
+                entity.getSoftware().getName(), entity.getClassroom().getName());
+        notificationService.sendNotification(message, null);
 
         return createdEntity;
     }
@@ -45,13 +44,15 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
     }
 
     @Transactional
-    public ClassroomSoftwareEntity update(long id, ClassroomEntity classroom, SoftwareEntity software, LocalDate installationDate) {
-        validate(classroom, software, installationDate);
-        ClassroomSoftwareEntity existsEntity = get(id);
-        existsEntity.setClassroom(classroom);
-        existsEntity.setSoftware(software);
-        existsEntity.setInstallationDate(installationDate);
-        return classroomSoftwareRepo.save(existsEntity);
+    public ClassroomSoftwareEntity update(long id, ClassroomSoftwareEntity entity) {
+        validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
+        ClassroomSoftwareEntity existingEntity = get(id);
+
+        existingEntity.setClassroom(entity.getClassroom());
+        existingEntity.setSoftware(entity.getSoftware());
+        existingEntity.setInstallationDate(entity.getInstallationDate());
+
+        return classroomSoftwareRepo.save(existingEntity);
     }
 
     @Transactional
@@ -72,7 +73,7 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
     }
 
     @Transactional(readOnly = true)
-    public List<SoftwareEntity> getUniqueSoftwareByDepartmentAndPeriod(Long departmentId, LocalDate start, LocalDate end) {
+    public List<ClassroomSoftwareEntity> getUniqueSoftwareByDepartmentAndPeriod(Long departmentId, LocalDate start, LocalDate end) {
         return classroomSoftwareRepo.findUniqueSoftwareByDepartmentAndPeriod(departmentId, start, end);
     }
 
@@ -84,14 +85,14 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
         validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
     }
 
-    private void validate(ClassroomEntity classroom, SoftwareEntity software, LocalDate installationDate) {
+    private void validate(ClassroomEntity classroom, SoftwareEntity software, Date installationDate) {
         if (classroom == null) {
             throw new IllegalArgumentException("Classroom must not be null");
         }
         if (software == null) {
             throw new IllegalArgumentException("Software must not be null");
         }
-        if (installationDate == null || installationDate.isAfter(LocalDate.now())) {
+        if (installationDate == null || installationDate.after(new Date())){
             throw new IllegalArgumentException("Installation date must not be null or in the future");
         }
     }

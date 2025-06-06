@@ -39,9 +39,9 @@ public class DepartmentEntity extends BaseEntity {
     @OrderBy("id ASC")
     private Set<ClassroomEntity> classrooms = new HashSet<>();
 
-    @OneToMany(mappedBy = "department")
-    @OrderBy("id ASC")
-    private Set<ReportEntity> reports = new HashSet<>();
+//    @OneToMany(mappedBy = "report")
+//    @OrderBy("id ASC")
+//    private Set<ReportEntity> reports = new HashSet<>();
 
     public DepartmentEntity(String name, FacultyEntity faculty) {
         this.name = name;
@@ -58,23 +58,23 @@ public class DepartmentEntity extends BaseEntity {
         classroom.setDepartment(null);
     }
 
-    public void addReport(ReportEntity report) {
-        this.reports.add(report);
-        report.setDepartment(this);
-    }
-
-    public void removeReport(ReportEntity report) {
-        this.reports.remove(report);
-        report.setDepartment(null);
-    }
+//    public void addReport(ReportEntity report) {
+//        this.reports.add(report);
+//        report.setDepartment(this);
+//    }
+//
+//    public void removeReport(ReportEntity report) {
+//        this.reports.remove(report);
+//        report.setDepartment(null);
+//    }
 
     @PreRemove
     private void preRemove() {
         for (ClassroomEntity classroom : classrooms) {
             classroom.setDepartment(null);
         }
-        for (ReportEntity report : reports) {
-            report.setDepartment(null);
-        }
+//        for (ReportEntity report : reports) {
+//            report.setDepartment(null);
+//        }
     }
 }

@@ -48,7 +48,6 @@ public final class Formatter {
         }
     }
 
-
     public static String formatToCustomString(LocalDate date) {
         if (date == null) return null;
         return date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));

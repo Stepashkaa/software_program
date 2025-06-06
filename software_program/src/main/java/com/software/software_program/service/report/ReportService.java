@@ -58,8 +58,8 @@ public class ReportService {
         JasperReport jasperReport = JasperCompileManager.compileReport(
                 getReportTemplateStream("SoftwareUsage.jrxml"));
 
-        LocalDate dateFrom = Formatter.parseToLocalDate(reportDto.getPeriodStart());
-        LocalDate dateTo = Formatter.parseToLocalDate(reportDto.getPeriodEnd());
+        Date dateFrom = Formatter.parse(reportDto.getPeriodStart());
+        Date dateTo = Formatter.parse(reportDto.getPeriodEnd());
 
         List<DepartmentEntity> departments = departmentService.getByIds(reportDto.getDepartmentIds());
         List<SoftwareUsageInfo> usageInfo = getUsageInfo(departments, dateFrom, dateTo);
@@ -125,7 +125,7 @@ public class ReportService {
     }
 
     private List<SoftwareUsageInfo> getUsageInfo(List<DepartmentEntity> departments,
-                                                 LocalDate from, LocalDate to) {
+                                                 Date from, Date to) {
         return departments.stream().map(department -> {
             SoftwareUsageInfo info = new SoftwareUsageInfo();
             info.setDepartmentName(department.getName());
@@ -134,8 +134,8 @@ public class ReportService {
             List<SoftwareUsageItem> usageItems = department.getClassrooms()
                     .stream()
                     .flatMap(classroom -> classroom.getClassroomSoftwares().stream()
-                            .filter(cs -> !cs.getInstallationDate().isBefore(from) &&
-                                    !cs.getInstallationDate().isAfter(to))
+                            .filter(cs -> !cs.getInstallationDate().before(from) &&
+                                    !cs.getInstallationDate().after(to))
                             .map(cs -> {
                                 SoftwareUsageItem item = new SoftwareUsageItem();
                                 item.setSoftwareName(cs.getSoftware().getName());

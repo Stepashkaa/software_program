@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -17,7 +18,7 @@ import java.time.LocalDate;
 @Table(name = "software_request")
 public class SoftwareRequestEntity extends BaseEntity {
     @Column(nullable = false)
-    private LocalDate requestDate;
+    private Date requestDate;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -34,7 +35,7 @@ public class SoftwareRequestEntity extends BaseEntity {
     @JoinColumn(name = "classroom_software_id", nullable = false)
     private ClassroomSoftwareEntity classroomSoftware;
 
-    public SoftwareRequestEntity(LocalDate requestDate, RequestStatus status, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
+    public SoftwareRequestEntity(Date requestDate, RequestStatus status, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
         this.requestDate = requestDate;
         this.status = status;
         this.description = description;

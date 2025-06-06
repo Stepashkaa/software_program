@@ -1,8 +1,9 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
+import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
-import com.software.software_program.model.entity.ReportEntity;
+//import com.software.software_program.model.entity.ReportEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.ClassroomSoftwareRepository;
 import com.software.software_program.repository.DepartmentRepository;
@@ -65,7 +66,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         existsEntity.setName(entity.getName());
         existsEntity.setFaculty(entity.getFaculty());
         syncClassrooms(existsEntity, entity.getClassrooms());
-        syncReports(existsEntity, entity.getReports());
+//        syncReports(existsEntity, entity.getReports());
         return repository.save(existsEntity);
     }
 
@@ -82,7 +83,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     }
 
     @Transactional(readOnly = true)
-    public List<SoftwareEntity> getSoftwareUsed(Long departmentId, int months) {
+    public List<ClassroomSoftwareEntity> getSoftwareUsed(Long departmentId, int months) {
         LocalDate end = LocalDate.now();
         LocalDate start = end.minusMonths(months);
         return classroomSoftwareRepo.findUniqueSoftwareByDepartmentAndPeriod(
@@ -118,13 +119,13 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         }
     }
 
-    private void syncReports(DepartmentEntity existsEntity, Set<ReportEntity> updatedReports) {
-        existsEntity.getReports().removeIf(report -> !updatedReports.contains(report));
-
-        for (ReportEntity report : updatedReports) {
-            if (!existsEntity.getReports().contains(report)) {
-                existsEntity.addReport(report);
-            }
-        }
-    }
+//    private void syncReports(DepartmentEntity existsEntity, Set<ReportEntity> updatedReports) {
+//        existsEntity.getReports().removeIf(report -> !updatedReports.contains(report));
+//
+//        for (ReportEntity report : updatedReports) {
+//            if (!existsEntity.getReports().contains(report)) {
+//                existsEntity.addReport(report);
+//            }
+//        }
+//    }
 }

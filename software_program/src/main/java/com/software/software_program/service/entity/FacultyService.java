@@ -1,11 +1,13 @@
 package com.software.software_program.service.entity;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.repository.FacultyRepository;
 import com.software.software_program.core.eror.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,19 +23,19 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     private final FacultyRepository facultyRepository;
 
     @Transactional(readOnly = true)
-    public Page<FacultyEntity> getAll(String name, Pageable pageable) {
-        if (name == null || name.isEmpty()) {
-            return facultyRepository.findAll(pageable);
-        }
-        return facultyRepository.findByNameContainingIgnoreCase(name, pageable);
-    }
-
-    @Transactional(readOnly = true)
     public List<FacultyEntity> getAll(String name) {
         if (name == null || name.isEmpty()) {
             return StreamSupport.stream(facultyRepository.findAll().spliterator(), false).toList();
         }
         return facultyRepository.findByNameContainingIgnoreCase(name);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FacultyEntity> getAll(String name, Pageable pageable) {
+        if (name == null || name.isEmpty()) {
+            return facultyRepository.findAll(pageable);
+        }
+        return facultyRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Transactional(readOnly = true)
