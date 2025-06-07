@@ -1,19 +1,18 @@
 package com.software.software_program.service.entity;
 
-import com.software.software_program.model.entity.ClassroomEntity;
+import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.EquipmentRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -44,13 +43,13 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
 
     @Transactional
     public EquipmentEntity create(EquipmentEntity entity) {
-        validate(entity, true);
+        validate(entity, null);
         return equipmentRepository.save(entity);
     }
 
     @Transactional
     public EquipmentEntity update(long id, EquipmentEntity entity) {
-        validate(entity, false);
+        validate(entity, id);
         EquipmentEntity existsEntity = get(id);
         existsEntity.setName(entity.getName());
         existsEntity.setType(entity.getType());
@@ -67,7 +66,7 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     }
 
     @Override
-    protected void validate(EquipmentEntity entity, boolean uniqueCheck) {
+    protected void validate(EquipmentEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("Equipment entity is null");
         }
@@ -75,11 +74,13 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
         validateStringField(entity.getType(), "Equipment type");
         validateStringField(entity.getSerialNumber(), "Equipment serial number");
 
-        if (uniqueCheck && equipmentRepository.findBySerialNumberIgnoreCase(entity.getSerialNumber()).isPresent()) {
+        final Optional<EquipmentEntity> existingUser = equipmentRepository.findByNameIgnoreCase(entity.getName());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("Equipment with serial number %s already exists", entity.getSerialNumber())
+                    String.format("User with email %s already exists", entity.getName())
             );
         }
+
         if (entity.getClassroom() == null) {
             throw new IllegalArgumentException("Classroom must not be null");
         }

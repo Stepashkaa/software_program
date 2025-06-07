@@ -22,6 +22,6 @@ import org.springframework.stereotype.Service;
         }
     }
 
-    protected abstract void validate(T entity, boolean uniqueCheck);
+    protected abstract void validate(T entity, Long id);
 }
 

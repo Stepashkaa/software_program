@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,13 +27,15 @@ public class DefaultEmailService implements EmailService {
 
     @Override
     public void sendSimpleEmail(EmailRequestDto emailRequestDto) {
-        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setFrom(secondaryEmail);
-        simpleMailMessage.setTo(resolveRecipient(emailRequestDto.getTo()));
-        simpleMailMessage.setSubject(emailRequestDto.getSubject());
-        simpleMailMessage.setText(emailRequestDto.getMessage());
-        simpleMailMessage.setReplyTo(emailRequestDto.getFrom());
-        emailSender.send(simpleMailMessage);
+        SimpleMailMessage message = createSimpleMailMessage(emailRequestDto);
+        emailSender.send(message);
+    }
+
+    @Override
+    @Async
+    public void sendSimpleEmailAsync(EmailRequestDto emailRequestDto) {
+        SimpleMailMessage message = createSimpleMailMessage(emailRequestDto);
+        emailSender.send(message);
     }
 
     @Override
@@ -40,11 +43,13 @@ public class DefaultEmailService implements EmailService {
             throws MessagingException {
         MimeMessage mimeMessage = emailSender.createMimeMessage();
         MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
-        messageHelper.setFrom(secondaryEmail);
         messageHelper.setTo(resolveRecipient(emailRequestDto.getTo()));
+        messageHelper.setFrom(secondaryEmail);
         messageHelper.setSubject(emailRequestDto.getSubject());
         messageHelper.setText(emailRequestDto.getMessage());
-        messageHelper.setReplyTo(emailRequestDto.getFrom());
+        if (emailRequestDto.getFrom() != null && !emailRequestDto.getFrom().isBlank()) {
+            messageHelper.setReplyTo(emailRequestDto.getFrom());
+        }
 
         int counter = 1;
         for (MultipartFile file : attachments) {
@@ -57,6 +62,18 @@ public class DefaultEmailService implements EmailService {
 
         emailSender.send(mimeMessage);
     }
+    private SimpleMailMessage createSimpleMailMessage(EmailRequestDto emailRequestDto) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+        simpleMailMessage.setFrom(secondaryEmail);
+        simpleMailMessage.setTo(resolveRecipient(emailRequestDto.getTo()));
+        simpleMailMessage.setSubject(emailRequestDto.getSubject());
+        simpleMailMessage.setText(emailRequestDto.getMessage());
+        if (emailRequestDto.getFrom() != null && !emailRequestDto.getFrom().isBlank()) {
+            simpleMailMessage.setReplyTo(emailRequestDto.getFrom());
+        }
+        return simpleMailMessage;
+    }
+
 
     private String resolveRecipient(String to) {
         return (to == null || to.isBlank()) ? supportEmail : to;

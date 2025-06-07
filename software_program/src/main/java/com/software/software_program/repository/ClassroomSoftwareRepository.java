@@ -1,5 +1,6 @@
 package com.software.software_program.repository;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ClassroomSoftwareRepository extends JpaRepository<ClassroomSoftwareEntity, Long> {
@@ -58,4 +60,6 @@ public interface ClassroomSoftwareRepository extends JpaRepository<ClassroomSoft
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
+    Optional<ClassroomSoftwareEntity> findByClassroomAndSoftware(ClassroomEntity classroom, SoftwareEntity software);
+
 }

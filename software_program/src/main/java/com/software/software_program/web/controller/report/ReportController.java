@@ -57,7 +57,7 @@ public class ReportController {
 
     @PostMapping("/html/{reportType}")
     public ResponseEntity<String> getHtml(@PathVariable ReportType reportType, @RequestBody ReportDto reportDto) throws JRException {
-        JasperPrint print = getJasperPrint(reportType, reportDto, true);
+        JasperPrint print = getJasperPrint(reportType, reportDto, reportDto.isIgnorePagination());
         String html = exporter.getHtml(print);
         return ResponseEntity.ok(html);
     }

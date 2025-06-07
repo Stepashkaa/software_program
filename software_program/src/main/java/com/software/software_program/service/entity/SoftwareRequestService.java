@@ -1,11 +1,12 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
+import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.model.enums.RequestStatus;
 import com.software.software_program.repository.SoftwareRequestRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import com.software.software_program.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +64,7 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     @Transactional
     public SoftwareRequestEntity create(Date requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
         SoftwareRequestEntity entity = new SoftwareRequestEntity(requestDate, RequestStatus.PENDING, description, user, classroomSoftware);
-        validate(entity, true);
+        validate(entity, null);
         return softwareRequestRepo.save(entity);
     }
 
@@ -89,7 +91,7 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
             existsEntity.setDescription(description);
         }
 
-        validate(existsEntity, false);
+        validate(existsEntity, id);
         return softwareRequestRepo.save(existsEntity);
     }
 
@@ -101,7 +103,7 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     }
 
     @Override
-    protected void validate(SoftwareRequestEntity entity, boolean uniqueCheck) {
+    protected void validate(SoftwareRequestEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("SoftwareRequest entity is null");
         }
@@ -120,18 +122,18 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
             throw new IllegalArgumentException("ClassroomSoftware must not be null");
         }
 
-        if (uniqueCheck) {
-            boolean exists = softwareRequestRepo.findByUserClassroomAndDate(
-                    entity.getUser().getId(),
-                    entity.getClassroomSoftware().getId(),
-                    entity.getRequestDate()
-            ).isPresent();
 
-            if (exists) {
-                throw new IllegalArgumentException(
-                        "Software request for this user, classroom software and date already exists"
-                );
-            }
+        boolean exists = softwareRequestRepo.findByUserClassroomAndDate(
+                entity.getUser().getId(),
+                entity.getClassroomSoftware().getId(),
+                entity.getRequestDate()
+        ).isPresent();
+
+        if (exists) {
+            throw new IllegalArgumentException(
+                    "Software request for this user, classroom software and date already exists"
+            );
         }
+
     }
 }

@@ -41,6 +41,10 @@ public class ReportDto {
     private String departmentName;
 
     private List<Long> requestIds;
+
     private List<Long> classroomIds;
+
     private RequestStatus status;
+
+    private boolean ignorePagination;
 }

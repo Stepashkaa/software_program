@@ -4,7 +4,7 @@ import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.ClassroomRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -35,7 +36,7 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
 
     @Transactional(readOnly = true)
     public List<ClassroomEntity> getAll(String name) {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.isBlank()) {
             return StreamSupport.stream(classroomRepository.findAll().spliterator(), false).toList();
         }
         return classroomRepository.findByNameContainingIgnoreCase(name);
@@ -64,13 +65,13 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
 
     @Transactional
     public ClassroomEntity create(ClassroomEntity entity) {
-        validate(entity, true);
+        validate(entity, null);
         return classroomRepository.save(entity);
     }
 
     @Transactional
     public ClassroomEntity update(long id, ClassroomEntity entity) {
-        validate(entity, false);
+        validate(entity, id);
         ClassroomEntity existsEntity = get(id);
         existsEntity.setName(entity.getName());
         existsEntity.setCapacity(entity.getCapacity());
@@ -88,7 +89,7 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     @Override
-    protected void validate(ClassroomEntity entity, boolean uniqueCheck) {
+    protected void validate(ClassroomEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("Classroom entity is null");
         }
@@ -99,7 +100,8 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
         if (entity.getDepartment() == null) {
             throw new IllegalArgumentException("Department must not be null");
         }
-        if (uniqueCheck && classroomRepository.findByNameIgnoreCase(entity.getName()).isPresent()) {
+        final Optional<ClassroomEntity> existingEntity = classroomRepository.findByNameIgnoreCase(entity.getName());
+        if (existingEntity.isPresent() && !existingEntity.get().getId().equals(id)) {
             throw new IllegalArgumentException(
                     String.format("Classroom with name %s already exists", entity.getName())
             );

@@ -4,7 +4,7 @@ import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.ClassroomSoftwareRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
 
     @Transactional
     public ClassroomSoftwareEntity create(ClassroomSoftwareEntity entity) {
+        validate(entity, null);
         validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
         ClassroomSoftwareEntity createdEntity = classroomSoftwareRepo.save(entity);
 
@@ -45,6 +47,7 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
 
     @Transactional
     public ClassroomSoftwareEntity update(long id, ClassroomSoftwareEntity entity) {
+        validate(entity, id);
         validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
         ClassroomSoftwareEntity existingEntity = get(id);
 
@@ -78,11 +81,22 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
     }
 
     @Override
-    protected void validate(ClassroomSoftwareEntity entity, boolean uniqueCheck) {
+    protected void validate(ClassroomSoftwareEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("ClassroomSoftware entity is null");
         }
         validate(entity.getClassroom(), entity.getSoftware(), entity.getInstallationDate());
+
+        final Optional<ClassroomSoftwareEntity> existingEntity = classroomSoftwareRepo.findByClassroomAndSoftware(
+                entity.getClassroom(), entity.getSoftware()
+        );
+
+        if (existingEntity.isPresent() && !existingEntity.get().getId().equals(id)) {
+            throw new IllegalArgumentException(
+                    String.format("ClassroomSoftware with classroom '%s' and software '%s' already exists",
+                            entity.getClassroom().getName(), entity.getSoftware().getName())
+            );
+        }
     }
 
     private void validate(ClassroomEntity classroom, SoftwareEntity software, Date installationDate) {

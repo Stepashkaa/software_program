@@ -1,6 +1,6 @@
 package com.software.software_program.web.mapper.entity;
 
-import com.software.software_program.core.utils.Formatter;
+import com.software.software_program.core.utility.Formatter;
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
@@ -9,8 +9,6 @@ import com.software.software_program.service.entity.SoftwareService;
 import com.software.software_program.web.dto.entity.ClassroomSoftwareDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.time.LocalDate;
 
 @Component
 @RequiredArgsConstructor

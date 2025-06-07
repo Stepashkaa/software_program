@@ -39,6 +39,10 @@ public class DepartmentEntity extends BaseEntity {
     @OrderBy("id ASC")
     private Set<ClassroomEntity> classrooms = new HashSet<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "head_id", nullable = false)
+    private UserEntity user;
+
 //    @OneToMany(mappedBy = "report")
 //    @OrderBy("id ASC")
 //    private Set<ReportEntity> reports = new HashSet<>();

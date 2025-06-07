@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.Check;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -39,6 +41,12 @@ import java.util.Set;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
+
+    @Column(name = "email_verified", nullable = false)
+    private boolean isEmailVerified;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications = new HashSet<>();
@@ -73,5 +81,10 @@ import java.util.Set;
         softwareRequests.remove(softwareRequest);
         softwareRequest.setUser(null);
     }
+    @PrePersist
+    private void setUp() {
+        this.createdAt = LocalDateTime.now(ZoneId.of("+00:00"));
+    }
+
 
 }

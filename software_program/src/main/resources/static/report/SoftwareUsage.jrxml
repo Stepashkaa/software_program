@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SoftwareUsage" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+    <parameter name="periodFrom" class="java.lang.String"/>
+    <parameter name="periodTo" class="java.lang.String"/>
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    <field name="departmentName" class="java.lang.String"/>
+    <field name="softwareList" class="java.util.List"/>
+    <pageHeader>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Период: " + $P{periodFrom} + " - " + $P{periodTo}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageHeader>
+    <detail>
+        <band height="40">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="14" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{departmentName}]]></textFieldExpression>
+            </textField>
+        </band>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{softwareList}.stream().map(item -> item.getSoftwareName() + " " + item.getVersion()).collect(Collectors.joining("\n"))]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>

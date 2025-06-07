@@ -4,10 +4,9 @@ import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 //import com.software.software_program.model.entity.ReportEntity;
-import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.ClassroomSoftwareRepository;
 import com.software.software_program.repository.DepartmentRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -28,7 +28,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
 
     @Transactional(readOnly = true)
     public List<DepartmentEntity> getAll(String name) {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.isBlank()) {
             return StreamSupport.stream(repository.findAll().spliterator(), false).toList();
         }
         return repository.findByNameContainingIgnoreCase(name);
@@ -36,7 +36,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
 
     @Transactional(readOnly = true)
     public Page<DepartmentEntity> getAll(String name, Pageable pageable) {
-        if (name == null || name.isEmpty()) {
+        if (name == null || name.isBlank()) {
             return repository.findAll(pageable);
         }
         return repository.findByNameContainingIgnoreCase(name, pageable);
@@ -55,13 +55,13 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
 
     @Transactional
     public DepartmentEntity create(DepartmentEntity entity) {
-        validate(entity, true);
+        validate(entity, null);
         return repository.save(entity);
     }
 
     @Transactional
     public DepartmentEntity update(long id, DepartmentEntity entity) {
-        validate(entity, false);
+        validate(entity, id);
         final DepartmentEntity existsEntity = get(id);
         existsEntity.setName(entity.getName());
         existsEntity.setFaculty(entity.getFaculty());
@@ -92,17 +92,16 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     }
 
     @Override
-    protected void validate(DepartmentEntity entity, boolean uniqueCheck) {
+    protected void validate(DepartmentEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("Department entity is null");
         }
         validateStringField(entity.getName(), "Department name");
-        if (uniqueCheck) {
-            if (repository.findByNameIgnoreCase(entity.getName()).isPresent()) {
-                throw new IllegalArgumentException(
-                        String.format("Department with name %s already exists", entity.getName())
-                );
-            }
+        final Optional<DepartmentEntity> existingUser = repository.findByNameIgnoreCase(entity.getName());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
+            throw new IllegalArgumentException(
+                    String.format("User with email %s already exists", entity.getName())
+            );
         }
         if (entity.getFaculty() == null) {
             throw new IllegalArgumentException("Faculty must not be null");

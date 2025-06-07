@@ -1,5 +1,6 @@
 package com.software.software_program.service.report;
 
+import com.software.software_program.core.log.Loggable;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,11 +20,11 @@ import java.io.StringWriter;
 @Setter
 public class ReportExporter {
     private ReportExporterStrategy strategy;
-
+    @Loggable
     public byte[] export(JasperPrint jasperPrint) throws JRException {
         return strategy.export(jasperPrint);
     }
-
+    @Loggable
     public String getHtml(JasperPrint jasperPrint) throws JRException {
         HtmlExporter exporter = new HtmlExporter();
         StringWriter writer = new StringWriter();

@@ -13,7 +13,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface EquipmentRepository extends JpaRepository<EquipmentEntity, Long>, JpaSpecificationExecutor<EquipmentEntity> {
-    Optional<EquipmentEntity> findBySerialNumberIgnoreCase(String serialNumber);
+    Optional<EquipmentEntity> findByNameIgnoreCase(@Param("name") String name);
+    Optional<EquipmentEntity> findBySerialNumberIgnoreCase(@Param("serialNumber") String serialNumber);
 
     List<EquipmentEntity> findByClassroom(@Param("classroom") ClassroomEntity classroom);
 

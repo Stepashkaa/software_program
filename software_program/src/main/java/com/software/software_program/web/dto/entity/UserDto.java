@@ -49,6 +49,9 @@ public class UserDto {
     private UserRole role;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private boolean isEmailVerified;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Long> notificationIds;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

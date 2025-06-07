@@ -1,8 +1,8 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.core.configuration.Constants;
-import com.software.software_program.core.eror.NotFoundException;
-import com.software.software_program.core.utils.ValidationUtils;
+import com.software.software_program.core.error.NotFoundException;
+import com.software.software_program.core.utility.ValidationUtils;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,13 +39,13 @@ public class UserService extends AbstractEntityService<UserEntity> {
 
     @Transactional
     public UserEntity create(UserEntity entity) {
-        validate(entity, true);
+        validate(entity, null);
         return repository.save(entity);
     }
 
     @Transactional
     public UserEntity update(long id, UserEntity entity) {
-        validate(entity, false);
+        validate(entity, id);
         final UserEntity existsEntity = get(id);
         existsEntity.setEmail(entity.getEmail());
         existsEntity.setPassword(entity.getPassword());
@@ -61,8 +61,14 @@ public class UserService extends AbstractEntityService<UserEntity> {
         return existsEntity;
     }
 
+    @Transactional(readOnly = true)
+    public UserEntity getByEmail(String email) {
+        return repository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found"));
+    }
+
     @Override
-    protected void validate(UserEntity entity, boolean uniqueCheck) {
+    protected void validate(UserEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("User entity is null");
         }

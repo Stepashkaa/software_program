@@ -1,10 +1,11 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
+import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.ClassroomSoftwareRepository;
 import com.software.software_program.repository.SoftwareRepository;
-import com.software.software_program.core.eror.NotFoundException;
+import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -48,7 +50,7 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
 
     @Transactional
     public SoftwareEntity create(SoftwareEntity entity) {
-        validate(entity, true);
+        validate(entity, null);
         SoftwareEntity createdEntity = softwareRepository.save(entity);
 
         // Отправка уведомлений о добавлении нового ПО
@@ -61,7 +63,7 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
 
     @Transactional
     public SoftwareEntity update(long id, SoftwareEntity entity) {
-        validate(entity, false);
+        validate(entity, id);
         SoftwareEntity existsEntity = get(id);
         existsEntity.setName(entity.getName());
         existsEntity.setVersion(entity.getVersion());
@@ -77,7 +79,7 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
     }
 
     @Override
-    protected void validate(SoftwareEntity entity, boolean uniqueCheck) {
+    protected void validate(SoftwareEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("Software entity is null");
         }
@@ -85,9 +87,10 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
         validateStringField(entity.getVersion(), "Software version");
         validateStringField(entity.getDescription(), "Software description");
 
-        if (uniqueCheck && softwareRepository.findByNameIgnoreCase(entity.getName()).isPresent()) {
+        final Optional<SoftwareEntity> existingUser = softwareRepository.findByNameIgnoreCase(entity.getName());
+        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("Software with name %s already exists", entity.getName())
+                    String.format("User with email %s already exists", entity.getName())
             );
         }
     }

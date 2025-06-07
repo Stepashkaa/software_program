@@ -10,6 +10,6 @@ import java.util.List;
 @Service
 public interface EmailService {
     void sendSimpleEmail(EmailRequestDto emailRequestDto);
-
+    void sendSimpleEmailAsync(EmailRequestDto emailRequestDto);
     void sendEmailWithAttachments(EmailRequestDto emailRequestDto, List<MultipartFile> attachments) throws MessagingException;
 }

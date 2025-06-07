@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="SoftwareRequest"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="555"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+    <!-- Заголовок отчета -->
+    <title>
+        <band height="100">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <text><![CDATA[Заявка на программное обеспечение. Код: 1418273973.199226]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="20" width="555" height="20"/>
+                <text><![CDATA[Основная]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="40" width="555" height="20"/>
+                <text><![CDATA[Подразделение/Факультет: Факультет информационных систем и технологий]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="60" width="555" height="20"/>
+                <text><![CDATA[Отдел/Кафедра: Каф. "ИС"]]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="80" width="555" height="20"/>
+                <text><![CDATA[Руководитель: Ярушкина Н. Г. | Телефон: 778-089 | Mail: jng@ulstu.ru | Дисп. класс (да/нет): нет]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <!-- Таблица -->
+    <detail>
+        <band height="20">
+            <componentElement>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components">
+                    <datasetRun subDataset="TableDataset">
+                        <dataSourceExpression><![CDATA[$P{dataSource}]]></dataSourceExpression>
+                    </datasetRun>
+                    <jr:column width="50">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="50" height="20"/>
+                                <text><![CDATA[№]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="50" height="20"/>
+                                <textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                    <jr:column width="150">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="150" height="20"/>
+                                <text><![CDATA[Название ПО]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="150" height="20"/>
+                                <textFieldExpression><![CDATA[$F{softwareName}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                    <jr:column width="50">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="50" height="20"/>
+                                <text><![CDATA[Версия]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="50" height="20"/>
+                                <textFieldExpression><![CDATA[$F{softwareVersion}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                    <jr:column width="150">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="150" height="20"/>
+                                <text><![CDATA[Описание]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="150" height="20"/>
+                                <textFieldExpression><![CDATA[$F{softwareDescription}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                    <jr:column width="100">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="100" height="20"/>
+                                <text><![CDATA[Аудитория]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="100" height="20"/>
+                                <textFieldExpression><![CDATA[$F{classroomName}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                    <jr:column width="55">
+                        <jr:columnHeader style="Table_CH" height="20">
+                            <staticText>
+                                <reportElement x="0" y="0" width="55" height="20"/>
+                                <text><![CDATA[Статус]]></text>
+                            </staticText>
+                        </jr:columnHeader>
+                        <jr:detailCell style="Table_TD" height="20">
+                            <textField>
+                                <reportElement x="0" y="0" width="55" height="20"/>
+                                <textFieldExpression><![CDATA[$F{status}]]></textFieldExpression>
+                            </textField>
+                        </jr:detailCell>
+                    </jr:column>
+                </jr:table>
+            </componentElement>
+        </band>
+    </detail>
+
+    <!-- Нижний колонтитул -->
+    <pageFooter>
+        <band height="100">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <text><![CDATA[_________________________]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="20" width="555" height="20"/>
+                <text><![CDATA[Дата]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="40" width="555" height="20"/>
+                <text><![CDATA[Подпись руководителя подразделения]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="60" width="555" height="20"/>
+                <text><![CDATA[_________________________]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="80" width="555" height="20"/>
+                <text><![CDATA[Дата принятия заявки]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="0" y="100" width="555" height="20"/>
+                <text><![CDATA[Подпись сотрудника ЦУЛ]]></text>
+            </staticText>
+        </band>
+    </pageFooter>
+</jasperReport>
