@@ -55,10 +55,13 @@ public class AuthenticationService {
         if (!storedOneTimePassword.equals(otpVerificationRequestDto.getOneTimePassword())) {
            throw new InvalidOtpException("Invalid OTP password: " + otpVerificationRequestDto.getOneTimePassword());
         }
-        user.setEmailVerified(true);
         user = userRepository.save(user);
 
         return generateLoginSuccessDto(user);
+    }
+
+    public void invalidateOtp(final String email) {
+        oneTimePasswordCache.invalidate(email);
     }
 
     public LoginSuccessDto refreshToken(final String refreshToken) {
@@ -73,14 +76,6 @@ public class AuthenticationService {
         return generateLoginSuccessDto(user);
     }
 
-    public String logout(final LogoutRequestDto logoutRequestDto) {
-        final UserEntity user = userRepository.findByEmail(logoutRequestDto.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Invalid user email: " + logoutRequestDto.getEmail()));
-        user.setEmailVerified(false);
-        userRepository.save(user);
-        return "Вы успешно вышли из аккаунта";
-    }
-
     public void sendOtp(final UserEntity user, final String subject) {
         oneTimePasswordCache.invalidate(user.getEmail());
 
@@ -90,7 +85,7 @@ public class AuthenticationService {
         EmailRequestDto emailRequest = new EmailRequestDto();
         emailRequest.setTo(user.getEmail());
         emailRequest.setSubject(subject);
-        emailRequest.setMessage("OTP: " + otp);
+        emailRequest.setMessage("OTP: " + otp+ "\nВремя действия кода ограничено 10 минутами.");
         CompletableFuture.runAsync(() -> emailService.sendSimpleEmailAsync(emailRequest));
     }
 

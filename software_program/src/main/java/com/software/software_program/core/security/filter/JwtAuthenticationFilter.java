@@ -33,6 +33,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getRequestURI();
+        if (path.equals("/api/v1/refresh-token") || path.equals("/api/v1/refresh-token-direct")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         final var authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader != null) {
@@ -44,11 +49,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     UserDetails userDetails = customUserDetailService.loadUserByUsername(String.valueOf(userId));
 
                     if (jwtUtils.validateToken(token, userDetails)) {
-                        UserEntity userEntity = userRepository.findById(userId)
-                                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-                        if (!userEntity.isEmailVerified()) {
-                            throw new EmailNotVerifiedException("Email not verified for user: " + userEntity.getEmail());
-                        }
 
                         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
                                 new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

@@ -42,9 +42,6 @@ import java.util.Set;
     @Column(nullable = false, length = 20)
     private UserRole role;
 
-    @Column(name = "email_verified", nullable = false)
-    private boolean isEmailVerified;
-
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

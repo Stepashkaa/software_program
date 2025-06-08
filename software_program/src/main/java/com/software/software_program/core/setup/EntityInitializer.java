@@ -28,6 +28,7 @@ public class EntityInitializer {
     private final ClassroomSoftwareService classroomSoftwareService;
     private final SoftwareRequestService softwareRequestService;
     private final UserService userService;
+    private final AppConfigurationProperties appConfigurationProperties;
 
     @Loggable
     @Transactional
@@ -102,15 +103,6 @@ public class EntityInitializer {
     }
 
     @Loggable
-    private void createUser() {
-        UserEntity user = new UserEntity();
-        user.setEmail("admin@example.com");
-        user.setPassword("password");
-        user.setRole(UserRole.ADMIN);
-        userService.create(user);
-    }
-
-    @Loggable
     private void createSoftwareRequests(List<ClassroomEntity> classrooms, List<SoftwareEntity> softwares) {
         UserEntity user = userService.getByEmail("admin@example.com");
 
@@ -133,4 +125,25 @@ public class EntityInitializer {
                 classroomSoftware2
         );
     }
+
+//    @Loggable
+//    private void createUser() {
+//        UserEntity user = new UserEntity();
+//        user.setEmail("admin@example.com");
+//        user.setPassword("password");
+//        user.setRole(UserRole.ADMIN);
+//        userService.create(user);
+//    }
+    @Loggable
+    private void createUser() {  // Убрали параметр EmployeeEntity
+        UserEntity user = new UserEntity(
+                "Admin", // fullName
+                appConfigurationProperties.getAdmin().getEmail(),
+                appConfigurationProperties.getAdmin().getNumber(),
+                appConfigurationProperties.getAdmin().getPassword(),
+                UserRole.ADMIN
+        );
+        userService.create(user);
+    }
+
 }

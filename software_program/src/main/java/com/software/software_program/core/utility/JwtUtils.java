@@ -73,7 +73,6 @@ public class JwtUtils {
         claims.put("account_creation_timestamp", user.getCreatedAt().toString());
         claims.put("user_id", user.getId());
         claims.put("email", user.getEmail());
-        claims.put("email_verified", user.isEmailVerified());
         claims.put("role", user.getRole().name());
         return createToken(claims, user.getEmail(), TimeUnit.MINUTES.toMillis(30));
     }

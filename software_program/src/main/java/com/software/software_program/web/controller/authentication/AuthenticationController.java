@@ -29,6 +29,11 @@ public class AuthenticationController {
         return ResponseEntity.noContent().build();
     }
 
+    @PostMapping(value = "/invalidate-otp")
+    public ResponseEntity<Void> invalidateOtp(@RequestBody @Valid final OtpRequestDto otpRequestDto) {
+        authenticationService.invalidateOtp(otpRequestDto.getEmail());
+        return ResponseEntity.noContent().build();
+    }
 
     @PostMapping(value = "/verify-otp")
     public ResponseEntity<LoginSuccessDto> otpVerificationHandler(@RequestBody @Valid final OtpVerificationRequestDto otpVerificationRequestDto,
@@ -65,7 +70,7 @@ public class AuthenticationController {
     }
 
     @PostMapping(value = "/logout")
-    public ResponseEntity<String> logoutHandler(@RequestBody @Valid final LogoutRequestDto logoutRequestDto, HttpServletResponse response) {
+    public ResponseEntity<Void> logoutHandler(HttpServletResponse response) {
         ResponseCookie deleteRefreshTokenCookie = ResponseCookie.from("refreshToken", "")
                 .httpOnly(true)
                 .secure(true)
@@ -75,7 +80,7 @@ public class AuthenticationController {
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, deleteRefreshTokenCookie.toString());
 
-        return ResponseEntity.ok(authenticationService.logout(logoutRequestDto));
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {
