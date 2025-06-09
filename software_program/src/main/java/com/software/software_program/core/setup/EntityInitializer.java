@@ -136,14 +136,13 @@ public class EntityInitializer {
 //    }
     @Loggable
     private void createUser() {  // Убрали параметр EmployeeEntity
-        UserEntity user = new UserEntity(
+        userService.create( new UserEntity(
                 "Admin", // fullName
                 appConfigurationProperties.getAdmin().getEmail(),
                 appConfigurationProperties.getAdmin().getNumber(),
                 appConfigurationProperties.getAdmin().getPassword(),
-                UserRole.ADMIN
-        );
-        userService.create(user);
+                UserRole.SUPER_ADMIN
+        ));
     }
 
 }

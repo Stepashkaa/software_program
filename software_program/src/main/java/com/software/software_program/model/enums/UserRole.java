@@ -3,6 +3,7 @@ package com.software.software_program.model.enums;
 import org.springframework.security.core.GrantedAuthority;
 
 public enum UserRole implements GrantedAuthority {
+    SUPER_ADMIN,
     ADMIN,
     TEACHER;
 

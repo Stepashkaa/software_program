@@ -78,6 +78,30 @@ import java.util.Set;
         softwareRequests.remove(softwareRequest);
         softwareRequest.setUser(null);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                id, email, password, phoneNumber, role
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null || getClass() != obj.getClass())
+            return false;
+
+        final UserEntity other = (UserEntity) obj;
+
+        return Objects.equals(this.id, other.id)
+                && Objects.equals(this.email, other.email)
+                && Objects.equals(this.password, other.password)
+                && Objects.equals(this.phoneNumber, other.phoneNumber)
+                && this.role == other.role;
+    }
+
     @PrePersist
     private void setUp() {
         this.createdAt = LocalDateTime.now(ZoneId.of("+00:00"));

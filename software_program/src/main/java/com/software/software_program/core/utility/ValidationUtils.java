@@ -5,7 +5,7 @@ import jakarta.mail.internet.InternetAddress;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public final class ValidationUtils {
+public class ValidationUtils {
     public static void validateEmailFormat(String email) {
         try {
             InternetAddress emailAddr = new InternetAddress(email);

@@ -55,6 +55,7 @@ public class JwtUtils {
 
         if (token.startsWith("Bearer ")) {
             token = token.substring(7);
+            System.out.println("Generated new secret key: " + secretKey);
         }
 
         return Jwts.parser()

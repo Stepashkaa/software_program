@@ -40,7 +40,7 @@ public class SecurityConfiguration {
                         .requestMatchers(Arrays.stream(ApiPathExclusion.values())
                                 .map(ApiPathExclusion::getPath)
                                 .toArray(String[]::new)).permitAll()
-                        .requestMatchers(Constants.API_URL + Constants.ADMIN_PREFIX + "/**").hasAnyRole(UserRole.ADMIN.name())
+                        .requestMatchers(Constants.API_URL + Constants.ADMIN_PREFIX + "/**").hasAnyRole(UserRole.ADMIN.name(), UserRole.SUPER_ADMIN.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
