@@ -15,6 +15,7 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserService userService;
 
     private NotificationEntity get(long id) {
         return notificationRepository.findById(id)
@@ -26,6 +27,18 @@ public class NotificationService {
         validate(message, user);
         NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
         return notificationRepository.save(entity);
+    }
+
+    @Transactional
+    public List<NotificationEntity> sendNotificationToAll(String message) {
+        validate(message); // Проверка сообщения
+        List<UserEntity> allUsers = userService.getAll(); // Получаем всех пользователей
+        return allUsers.stream()
+                .map(user -> {
+                    NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
+                    return notificationRepository.save(entity);
+                })
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -57,5 +70,11 @@ public class NotificationService {
             throw new IllegalArgumentException("User must not be null");
         }
     }
+    private void validate(String message) {
+        if (message == null || message.isBlank()) {
+            throw new IllegalArgumentException("Message must not be null or empty");
+        }
+    }
+
 
 }

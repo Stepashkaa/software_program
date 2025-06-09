@@ -29,7 +29,7 @@ public class ClassroomSoftwareService extends AbstractEntityService<ClassroomSof
 
         String message = String.format("Программное обеспечение '%s' установлено в аудитории '%s'",
                 entity.getSoftware().getName(), entity.getClassroom().getName());
-        notificationService.sendNotification(message, null);
+        notificationService.sendNotificationToAll(message);
 
         return createdEntity;
     }

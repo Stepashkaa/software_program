@@ -109,8 +109,17 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     private void syncClassroomSoftwares(ClassroomEntity existsEntity, Set<ClassroomSoftwareEntity> updatedClassroomSoftwares) {
-        existsEntity.getClassroomSoftwares().removeIf(classroomSoftware -> !updatedClassroomSoftwares.contains(classroomSoftware));
+        // Находим программное обеспечение для удаления
+        Set<ClassroomSoftwareEntity> softwaresToRemove = existsEntity.getClassroomSoftwares().stream()
+                .filter(classroomSoftware -> !updatedClassroomSoftwares.contains(classroomSoftware))
+                .collect(Collectors.toSet());
 
+        // Удаляем найденные элементы
+        for (ClassroomSoftwareEntity classroomSoftware : softwaresToRemove) {
+            existsEntity.removeClassroomSoftware(classroomSoftware);
+        }
+
+        // Добавляем новые или обновляем существующие элементы
         for (ClassroomSoftwareEntity classroomSoftware : updatedClassroomSoftwares) {
             if (!existsEntity.getClassroomSoftwares().contains(classroomSoftware)) {
                 existsEntity.addClassroomSoftware(classroomSoftware);
@@ -119,8 +128,17 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     private void syncEquipments(ClassroomEntity existsEntity, Set<EquipmentEntity> updatedEquipments) {
-        existsEntity.getEquipments().removeIf(equipment -> !updatedEquipments.contains(equipment));
+        // Находим оборудование для удаления
+        Set<EquipmentEntity> equipmentsToRemove = existsEntity.getEquipments().stream()
+                .filter(equipment -> !updatedEquipments.contains(equipment))
+                .collect(Collectors.toSet());
 
+        // Удаляем найденные элементы
+        for (EquipmentEntity equipment : equipmentsToRemove) {
+            existsEntity.removeEquipment(equipment);
+        }
+
+        // Добавляем новые или обновляем существующие элементы
         for (EquipmentEntity equipment : updatedEquipments) {
             if (!existsEntity.getEquipments().contains(equipment)) {
                 existsEntity.addEquipment(equipment);

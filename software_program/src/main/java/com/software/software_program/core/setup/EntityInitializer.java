@@ -33,14 +33,14 @@ public class EntityInitializer {
     @Loggable
     @Transactional
     public void initializeAll() {
+        createUser();
         List<FacultyEntity> faculties = createFaculties();
         List<DepartmentEntity> departments = createDepartments(faculties);
         List<ClassroomEntity> classrooms = createClassrooms(departments);
         List<SoftwareEntity> softwares = createSoftwares();
         List<EquipmentEntity> equipments = createEquipments(classrooms);
         associateClassroomSoftware(classrooms, softwares);
-        createUser();
-        createSoftwareRequests(classrooms, softwares);
+        //createSoftwareRequests(classrooms, softwares);
     }
 
     @Loggable
@@ -51,12 +51,34 @@ public class EntityInitializer {
         return faculties;
     }
 
+    // Вспомогательный метод для создания пользователя
+    private UserEntity createUser(String fullName, String email, String phoneNumber, String password, UserRole role) {
+        UserEntity user = new UserEntity(fullName, email, phoneNumber, password, role);
+        return userService.create(user);
+    }
+
+    // Вспомогательный метод для создания кафедры с заведующим
+    private DepartmentEntity createDepartment(String name, FacultyEntity faculty, UserEntity head) {
+        DepartmentEntity department = new DepartmentEntity();
+        department.setName(name);
+        department.setFaculty(faculty);
+        department.setHead(head); // Назначаем заведующего
+        return departmentService.create(department);
+    }
+
     @Loggable
     private List<DepartmentEntity> createDepartments(List<FacultyEntity> faculties) {
+        // Создаем пользователей-заведующих
+        UserEntity head1 = createUser("John Doe", "johndoe@gmail.com", "+72345678956", "A1b@C2d#", UserRole.TEACHER);
+        UserEntity head2 = createUser("Jane Smith", "janesmith@gmail.com", "+78765432189", "Qw3rty!*", UserRole.TEACHER);
+        UserEntity head3 = createUser("Alice Johnson", "alicejohnson@gmail.com", "+75553332156", "Zx%19cvB", UserRole.TEACHER);
+
+        // Создаем кафедры с заведующими
         List<DepartmentEntity> departments = new ArrayList<>();
-        departments.add(departmentService.create(new DepartmentEntity("Кафедра программирования", faculties.get(0))));
-        departments.add(departmentService.create(new DepartmentEntity("Кафедра системного администрирования", faculties.get(0))));
-        departments.add(departmentService.create(new DepartmentEntity("Кафедра экономики", faculties.get(1))));
+        departments.add(createDepartment("Кафедра программирования", faculties.get(0), head1));
+        departments.add(createDepartment("Кафедра системного администрирования", faculties.get(0), head2));
+        departments.add(createDepartment("Кафедра экономики", faculties.get(1), head3));
+
         return departments;
     }
 
@@ -104,7 +126,7 @@ public class EntityInitializer {
 
     @Loggable
     private void createSoftwareRequests(List<ClassroomEntity> classrooms, List<SoftwareEntity> softwares) {
-        UserEntity user = userService.getByEmail("admin@example.com");
+        UserEntity user = userService.getByEmail("johndoe@gmail.com");
 
         // Создаем ClassroomSoftware для использования в заявках
         ClassroomSoftwareEntity classroomSoftware1 = classroomSoftwareService.getAll().get(0);
@@ -135,10 +157,13 @@ public class EntityInitializer {
 //        userService.create(user);
 //    }
     @Loggable
-    private void createUser() {  // Убрали параметр EmployeeEntity
-        userService.create( new UserEntity(
-                "Admin", // fullName
-                appConfigurationProperties.getAdmin().getEmail(),
+    private void createUser() {
+        String email = appConfigurationProperties.getAdmin().getEmail();
+        System.out.println("CREATING USER WITH EMAIL: " + email);
+
+        userService.create(new UserEntity(
+                "Admin",
+                email,
                 appConfigurationProperties.getAdmin().getNumber(),
                 appConfigurationProperties.getAdmin().getPassword(),
                 UserRole.SUPER_ADMIN

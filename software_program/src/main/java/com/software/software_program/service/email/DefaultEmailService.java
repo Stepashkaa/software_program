@@ -27,8 +27,13 @@ public class DefaultEmailService implements EmailService {
 
     @Override
     public void sendSimpleEmail(EmailRequestDto emailRequestDto) {
-        SimpleMailMessage message = createSimpleMailMessage(emailRequestDto);
-        emailSender.send(message);
+        try {
+            SimpleMailMessage message = createSimpleMailMessage(emailRequestDto);
+            emailSender.send(message);
+        } catch (Exception e) {
+            System.err.println("Error sending email: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     @Override

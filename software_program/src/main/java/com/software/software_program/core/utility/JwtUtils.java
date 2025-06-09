@@ -51,6 +51,10 @@ public class JwtUtils {
 
     private Claims extractAllClaims(String token) {
         String secretKey = appConfigurationProperties.getJwt().getSecretKey();
+        if (secretKey == null || secretKey.isEmpty()) {
+            System.out.println("JWT Secret Key is missing!");
+            return null; // или выбросьте исключение
+        }
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
         if (token.startsWith("Bearer ")) {

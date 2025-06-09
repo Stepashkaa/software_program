@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -65,6 +66,11 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         final DepartmentEntity existsEntity = get(id);
         existsEntity.setName(entity.getName());
         existsEntity.setFaculty(entity.getFaculty());
+        if (entity.getHead() != null) {
+            existsEntity.setHead(entity.getHead());
+        } else {
+            throw new IllegalArgumentException("Head of the department must not be null during update");
+        }
         syncClassrooms(existsEntity, entity.getClassrooms());
 //        syncReports(existsEntity, entity.getReports());
         return repository.save(existsEntity);
@@ -91,6 +97,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         );
     }
 
+
     @Override
     protected void validate(DepartmentEntity entity, Long id) {
         if (entity == null) {
@@ -106,11 +113,23 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         if (entity.getFaculty() == null) {
             throw new IllegalArgumentException("Faculty must not be null");
         }
+        if (entity.getHead() == null) {
+            throw new IllegalArgumentException("Head of the department must not be null");
+        }
     }
 
     private void syncClassrooms(DepartmentEntity existsEntity, Set<ClassroomEntity> updatedClassrooms) {
-        existsEntity.getClassrooms().removeIf(classroom -> !updatedClassrooms.contains(classroom));
+        // Находим аудитории для удаления
+        Set<ClassroomEntity> classroomsToRemove = existsEntity.getClassrooms().stream()
+                .filter(classroom -> !updatedClassrooms.contains(classroom))
+                .collect(Collectors.toSet());
 
+        // Удаляем найденные аудитории
+        for (ClassroomEntity classroom : classroomsToRemove) {
+            existsEntity.removeClassroom(classroom);
+        }
+
+        // Добавляем новые или обновляем существующие аудитории
         for (ClassroomEntity classroom : updatedClassrooms) {
             if (!existsEntity.getClassrooms().contains(classroom)) {
                 existsEntity.addClassroom(classroom);

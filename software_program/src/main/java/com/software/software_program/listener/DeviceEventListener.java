@@ -61,12 +61,12 @@ public class DeviceEventListener implements PostDeleteEventListener, PostUpdateE
         if (entity instanceof ClassroomSoftwareEntity classroomSoftware) {
             notificationService.sendNotification(
                     message + ": " + classroomSoftware.getSoftware().getName(),
-                    classroomSoftware.getClassroom().getDepartment().getUser()
+                    classroomSoftware.getClassroom().getDepartment().getHead()
             );
         } else if (entity instanceof EquipmentEntity equipment) {
             notificationService.sendNotification(
                     message + ": " + equipment.getName(),
-                    equipment.getClassroom().getDepartment().getUser()
+                    equipment.getClassroom().getDepartment().getHead()
             );
         } else if (entity instanceof UserEntity user) {
             notificationService.sendNotification(message, user);

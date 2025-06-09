@@ -34,7 +34,6 @@ public class NotificationController {
             @RequestParam String message,
             @RequestParam Long userId
     ) {
-        // Получаем пользователя через маппер или сервис (в зависимости от реализации)
         return notificationMapper.toDto(
                 notificationService.sendNotification(message, null) // Предполагается, что userId используется внутри сервиса
         );

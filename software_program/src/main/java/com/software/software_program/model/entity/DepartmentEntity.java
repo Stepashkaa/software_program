@@ -41,15 +41,16 @@ public class DepartmentEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "head_id", nullable = false)
-    private UserEntity user;
+    private UserEntity head;
 
 //    @OneToMany(mappedBy = "report")
 //    @OrderBy("id ASC")
 //    private Set<ReportEntity> reports = new HashSet<>();
 
-    public DepartmentEntity(String name, FacultyEntity faculty) {
+    public DepartmentEntity(String name, FacultyEntity faculty, UserEntity head) {
         this.name = name;
         this.faculty = faculty;
+        this.head = head;
     }
 
     public void addClassroom(ClassroomEntity classroom) {

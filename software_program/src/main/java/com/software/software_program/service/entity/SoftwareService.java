@@ -56,7 +56,7 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
         // Отправка уведомлений о добавлении нового ПО
         String message = String.format("Добавлено новое ПО: %s (версия: %s)",
                 createdEntity.getName(), createdEntity.getVersion());
-        notificationService.sendNotification(message, null); // Уведомление для администраторов
+        notificationService.sendNotificationToAll(message);
 
         return createdEntity;
     }

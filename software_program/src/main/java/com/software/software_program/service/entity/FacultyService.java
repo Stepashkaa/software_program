@@ -1,5 +1,6 @@
 package com.software.software_program.service.entity;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.model.entity.FacultyEntity;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -87,8 +89,17 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     }
 
     private void syncDepartments(FacultyEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
-        existsEntity.getDepartments().removeIf(department -> !updatedDepartments.contains(department));
+        // Находим кафедры для удаления
+        Set<DepartmentEntity> departmentsToRemove = existsEntity.getDepartments().stream()
+                .filter(department -> !updatedDepartments.contains(department))
+                .collect(Collectors.toSet());
 
+        // Удаляем найденные кафедры
+        for (DepartmentEntity department : departmentsToRemove) {
+            existsEntity.removeDepartment(department);
+        }
+
+        // Добавляем новые или обновляем существующие кафедры
         for (DepartmentEntity department : updatedDepartments) {
             if (!existsEntity.getDepartments().contains(department)) {
                 existsEntity.addDepartment(department);

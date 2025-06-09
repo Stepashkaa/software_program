@@ -1,5 +1,6 @@
 package com.software.software_program.core.configuration;
 
+import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -12,8 +13,8 @@ public class AppConfigurationProperties {
     private Jwt jwt = new Jwt();
     private Admin admin = new Admin();
 
-    // Конструктор для логирования значений
-    public AppConfigurationProperties() {
+    @PostConstruct
+    public void logProperties() {
         System.out.println("Admin email: " + admin.getEmail());
         System.out.println("JWT secret key: " + jwt.getSecretKey());
     }
@@ -33,7 +34,6 @@ public class AppConfigurationProperties {
         private String email;
         private String password;
         private String number;
-        // Геттер с логированием
         public String getEmail() {
             if (email == null || email.isEmpty()) {
                 System.out.println("Admin email is not set!");

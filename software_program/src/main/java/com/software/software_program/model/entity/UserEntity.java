@@ -51,6 +51,9 @@ import java.util.Set;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
 
+    @OneToOne(mappedBy = "head", fetch = FetchType.LAZY)
+    private DepartmentEntity department;
+
     public UserEntity(String fullName, String email, String phoneNumber, String password, UserRole role) {
         this.fullName = fullName;
         this.email = email;
