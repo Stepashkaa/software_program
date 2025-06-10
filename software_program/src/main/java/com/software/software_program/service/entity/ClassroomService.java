@@ -2,6 +2,7 @@ package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
+import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.ClassroomRepository;
 import com.software.software_program.core.error.NotFoundException;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -128,19 +130,22 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     private void syncEquipments(ClassroomEntity existsEntity, Set<EquipmentEntity> updatedEquipments) {
-        // Находим оборудование для удаления
-        Set<EquipmentEntity> equipmentsToRemove = existsEntity.getEquipments().stream()
-                .filter(equipment -> !updatedEquipments.contains(equipment))
+        Set<EquipmentEntity> currentEquipments = new HashSet<>(existsEntity.getEquipments());
+        Set<EquipmentEntity> updatedEquipmentsCopy = new HashSet<>(updatedEquipments);
+
+        // Находим аудитории для удаления
+        Set<EquipmentEntity> equipmentsToRemove = currentEquipments.stream()
+                .filter(classroom -> !updatedEquipmentsCopy.contains(classroom))
                 .collect(Collectors.toSet());
 
-        // Удаляем найденные элементы
+        // Удаляем найденные аудитории
         for (EquipmentEntity equipment : equipmentsToRemove) {
             existsEntity.removeEquipment(equipment);
         }
 
-        // Добавляем новые или обновляем существующие элементы
-        for (EquipmentEntity equipment : updatedEquipments) {
-            if (!existsEntity.getEquipments().contains(equipment)) {
+        // Добавляем новые или обновляем существующие аудитории
+        for (EquipmentEntity equipment : updatedEquipmentsCopy) {
+            if (!currentEquipments.contains(equipment)) {
                 existsEntity.addEquipment(equipment);
             }
         }

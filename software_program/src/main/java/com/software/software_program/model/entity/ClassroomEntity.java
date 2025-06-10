@@ -2,6 +2,7 @@ package com.software.software_program.model.entity;
 
 import jakarta.persistence.*;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.annotations.Check;
@@ -26,7 +27,7 @@ public class ClassroomEntity extends BaseEntity {
     private Integer capacity;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "department_id", nullable = false)
+    @JoinColumn(name = "department_id")
     private DepartmentEntity department;
 
     @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -67,5 +68,19 @@ public class ClassroomEntity extends BaseEntity {
             equipments.remove(equipment);
             equipment.setClassroom(null);
         }
+    }
+
+    // ClassroomEntity.java
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Используем только id
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ClassroomEntity that = (ClassroomEntity) o;
+        return Objects.equals(id, that.id);
     }
 }

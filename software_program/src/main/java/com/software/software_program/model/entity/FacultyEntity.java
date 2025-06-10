@@ -1,6 +1,7 @@
 package com.software.software_program.model.entity;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -52,4 +53,28 @@ public class FacultyEntity extends BaseEntity {
             department.setFaculty(null);
         }
     }
+    // FacultyEntity.java
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                id,
+                name
+        );
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+
+        FacultyEntity other = (FacultyEntity) obj;
+
+        return Objects.equals(this.getId(), other.getId())
+                && Objects.equals(this.name, other.name);
+    }
+
 }

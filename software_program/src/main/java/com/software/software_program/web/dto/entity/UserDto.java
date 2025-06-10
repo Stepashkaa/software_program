@@ -62,4 +62,10 @@ public class UserDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> softwareRequestDescriptions;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<Long> departmentIds;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> departmentNames;
 }

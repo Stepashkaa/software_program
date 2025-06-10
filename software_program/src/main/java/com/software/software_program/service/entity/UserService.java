@@ -5,6 +5,7 @@ import com.software.software_program.core.error.NotFoundException;
 import com.software.software_program.core.utility.ValidationUtils;
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
+import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Service
@@ -57,6 +59,7 @@ public class UserService extends AbstractEntityService<UserEntity> {
         existsEntity.setPassword(entity.getPassword());
         existsEntity.setPhoneNumber(entity.getPhoneNumber());
         existsEntity.setRole(entity.getRole());
+        syncDepartments(existsEntity, entity.getDepartments());
         return repository.save(existsEntity);
     }
 
@@ -109,6 +112,25 @@ public class UserService extends AbstractEntityService<UserEntity> {
             throw new IllegalArgumentException("Phone number must start with +country code or 8");
         }
         return cleaned;
+    }
+
+    private void syncDepartments(UserEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
+        // Находим кафедры для удаления
+        Set<DepartmentEntity> departmentsToRemove = existsEntity.getDepartments().stream()
+                .filter(department -> !updatedDepartments.contains(department))
+                .collect(Collectors.toSet());
+
+        // Удаляем найденные кафедры
+        for (DepartmentEntity department : departmentsToRemove) {
+            existsEntity.removeDepartment(department);
+        }
+
+        // Добавляем новые или обновляем существующие кафедры
+        for (DepartmentEntity department : updatedDepartments) {
+            if (!existsEntity.getDepartments().contains(department)) {
+                existsEntity.addDepartment(department);
+            }
+        }
     }
 
 }

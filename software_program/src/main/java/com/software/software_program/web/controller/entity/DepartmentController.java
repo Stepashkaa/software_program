@@ -52,7 +52,7 @@ public class DepartmentController {
         );
     }
     @DeleteMapping("/{id}")
-    public DepartmentDto delete(@PathVariable Long id) {
+    public DepartmentDto delete(@PathVariable(name = "id") Long id) {
         return departmentMapper.toDto(departmentService.delete(id));
     }
     @GetMapping("/{id}/classrooms")

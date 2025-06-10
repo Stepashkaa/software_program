@@ -26,8 +26,7 @@ public class SoftwareProgramApplication implements CommandLineRunner {
 	@Override
 	@Transactional
 	public void run(String... args) {
-			initializer.initializeAll();
-
+		initializer.initializeAll();
 	}
 
 }

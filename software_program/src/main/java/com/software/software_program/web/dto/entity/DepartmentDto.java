@@ -21,11 +21,15 @@ public class DepartmentDto {
     private String name;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long facultyId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String facultyName;
+
+    private Long headId;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String headName;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Long> classroomIds;

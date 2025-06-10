@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -44,7 +45,14 @@ public class FacultyMapper {
         entity.setId(dto.getId());
         entity.setName(dto.getName());
 
-        entity.setDepartments(new HashSet<>());
+        if (dto.getDepartmentIds() != null && !dto.getDepartmentIds().isEmpty()) {
+            Set<DepartmentEntity> departments = dto.getDepartmentIds().stream()
+                    .map(departmentService::get) // Получаем кафедры по ID
+                    .collect(Collectors.toSet());
+            entity.setDepartments(departments);
+        } else {
+            entity.setDepartments(new HashSet<>()); // Если кафедры не указаны, оставляем пустой набор
+        }
 
         return entity;
     }

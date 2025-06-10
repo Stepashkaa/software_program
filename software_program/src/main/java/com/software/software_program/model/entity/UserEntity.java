@@ -51,8 +51,9 @@ import java.util.Set;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
 
-    @OneToOne(mappedBy = "head", fetch = FetchType.LAZY)
-    private DepartmentEntity department;
+    @OneToMany(mappedBy = "head", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OrderBy("id ASC")
+    private Set<DepartmentEntity> departments = new HashSet<>();
 
     public UserEntity(String fullName, String email, String phoneNumber, String password, UserRole role) {
         this.fullName = fullName;
@@ -80,6 +81,16 @@ import java.util.Set;
     public void removeSoftwareRequest(SoftwareRequestEntity softwareRequest) {
         softwareRequests.remove(softwareRequest);
         softwareRequest.setUser(null);
+    }
+
+    public void addDepartment(DepartmentEntity department) {
+        this.departments.add(department);
+        department.setHead(this);
+    }
+
+    public void removeDepartment(DepartmentEntity department) {
+        this.departments.remove(department);
+        department.setHead(null);
     }
 
     @Override

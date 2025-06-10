@@ -1,7 +1,9 @@
 package com.software.software_program.web.dto.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.micrometer.common.lang.Nullable;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +21,7 @@ public class FacultyDto {
     @Size(min = 1, max = 50)
     private String name;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    @Nullable
     private List<Long> departmentIds;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

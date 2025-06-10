@@ -19,12 +19,12 @@ public interface EquipmentRepository extends JpaRepository<EquipmentEntity, Long
     List<EquipmentEntity> findByClassroom(@Param("classroom") ClassroomEntity classroom);
 
     @Query("""
-        SELECT e FROM EquipmentEntity e
-        JOIN e.classroom c
-        WHERE (:type IS NULL OR LOWER(e.type) LIKE LOWER(CONCAT('%', :type, '%')))
-          AND (:serialNumber IS NULL OR LOWER(e.serialNumber) LIKE LOWER(CONCAT('%', :serialNumber, '%')))
-          AND (:classroomId IS NULL OR c.id = :classroomId)
-    """)
+    SELECT e FROM EquipmentEntity e
+    JOIN FETCH e.classroom c
+    WHERE (:type IS NULL OR LOWER(CAST(e.type AS STRING)) LIKE LOWER(CONCAT('%', :type, '%')))
+      AND (:serialNumber IS NULL OR LOWER(CAST(e.serialNumber AS STRING)) LIKE LOWER(CONCAT('%', :serialNumber, '%')))
+      AND (:classroomId IS NULL OR c.id = :classroomId)
+""")
     Page<EquipmentEntity> findAllByFilters(
             @Param("type") String type,
             @Param("serialNumber") String serialNumber,

@@ -35,12 +35,13 @@ public class EntityInitializer {
     public void initializeAll() {
         createUser();
         List<FacultyEntity> faculties = createFaculties();
-        List<DepartmentEntity> departments = createDepartments(faculties);
+        List<UserEntity> heads = createHeads(); // Создаем список заведующих
+        List<DepartmentEntity> departments = createDepartments(faculties, heads); // Передаем заведующих
         List<ClassroomEntity> classrooms = createClassrooms(departments);
         List<SoftwareEntity> softwares = createSoftwares();
         List<EquipmentEntity> equipments = createEquipments(classrooms);
         associateClassroomSoftware(classrooms, softwares);
-        //createSoftwareRequests(classrooms, softwares);
+        // createSoftwareRequests(classrooms, softwares);
     }
 
     @Loggable
@@ -49,6 +50,15 @@ public class EntityInitializer {
         faculties.add(facultyService.create(new FacultyEntity("Факультет информационных технологий")));
         faculties.add(facultyService.create(new FacultyEntity("Факультет экономики и управления")));
         return faculties;
+    }
+
+    @Loggable
+    private List<UserEntity> createHeads() {
+        List<UserEntity> heads = new ArrayList<>();
+        heads.add(createUser("John Doe", "johndoe@gmail.com", "+72345678956", "A1b@C2d#", UserRole.TEACHER));
+        heads.add(createUser("Jane Smith", "janesmith@gmail.com", "+78765432189", "Qw3rty!*", UserRole.TEACHER));
+        heads.add(createUser("Alice Johnson", "stepan2004stepan@yandex.ru", "+75553332156", "Zx%19cvB", UserRole.TEACHER));
+        return heads;
     }
 
     // Вспомогательный метод для создания пользователя
@@ -67,18 +77,11 @@ public class EntityInitializer {
     }
 
     @Loggable
-    private List<DepartmentEntity> createDepartments(List<FacultyEntity> faculties) {
-        // Создаем пользователей-заведующих
-        UserEntity head1 = createUser("John Doe", "johndoe@gmail.com", "+72345678956", "A1b@C2d#", UserRole.TEACHER);
-        UserEntity head2 = createUser("Jane Smith", "janesmith@gmail.com", "+78765432189", "Qw3rty!*", UserRole.TEACHER);
-        UserEntity head3 = createUser("Alice Johnson", "alicejohnson@gmail.com", "+75553332156", "Zx%19cvB", UserRole.TEACHER);
-
-        // Создаем кафедры с заведующими
+    private List<DepartmentEntity> createDepartments(List<FacultyEntity> faculties, List<UserEntity> heads) {
         List<DepartmentEntity> departments = new ArrayList<>();
-        departments.add(createDepartment("Кафедра программирования", faculties.get(0), head1));
-        departments.add(createDepartment("Кафедра системного администрирования", faculties.get(0), head2));
-        departments.add(createDepartment("Кафедра экономики", faculties.get(1), head3));
-
+        departments.add(createDepartment("Кафедра программирования", faculties.get(0), heads.get(0)));
+        departments.add(createDepartment("Кафедра системного администрирования", faculties.get(0), heads.get(1)));
+        departments.add(createDepartment("Кафедра экономики", faculties.get(1), heads.get(2)));
         return departments;
     }
 
@@ -86,8 +89,8 @@ public class EntityInitializer {
     private List<ClassroomEntity> createClassrooms(List<DepartmentEntity> departments) {
         List<ClassroomEntity> classrooms = new ArrayList<>();
         classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 101", 30, departments.get(0))));
-        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 202", 25, departments.get(1))));
-        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 303", 40, departments.get(2))));
+        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 202", 25, departments.get(0))));
+        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 303", 40, departments.get(1))));
         return classrooms;
     }
 
@@ -125,38 +128,6 @@ public class EntityInitializer {
     }
 
     @Loggable
-    private void createSoftwareRequests(List<ClassroomEntity> classrooms, List<SoftwareEntity> softwares) {
-        UserEntity user = userService.getByEmail("johndoe@gmail.com");
-
-        // Создаем ClassroomSoftware для использования в заявках
-        ClassroomSoftwareEntity classroomSoftware1 = classroomSoftwareService.getAll().get(0);
-        ClassroomSoftwareEntity classroomSoftware2 = classroomSoftwareService.getAll().get(1);
-
-        // Создаем заявки на установку ПО
-        softwareRequestService.create(
-                new Date(),
-                "Заявка на установку Microsoft Office",
-                user,
-                classroomSoftware1
-        );
-
-        softwareRequestService.create(
-                new Date(),
-                "Заявка на установку IntelliJ IDEA",
-                user,
-                classroomSoftware2
-        );
-    }
-
-//    @Loggable
-//    private void createUser() {
-//        UserEntity user = new UserEntity();
-//        user.setEmail("admin@example.com");
-//        user.setPassword("password");
-//        user.setRole(UserRole.ADMIN);
-//        userService.create(user);
-//    }
-    @Loggable
     private void createUser() {
         String email = appConfigurationProperties.getAdmin().getEmail();
         System.out.println("CREATING USER WITH EMAIL: " + email);
@@ -169,5 +140,4 @@ public class EntityInitializer {
                 UserRole.SUPER_ADMIN
         ));
     }
-
 }

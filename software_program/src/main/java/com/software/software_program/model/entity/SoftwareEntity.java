@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.annotations.Check;
@@ -51,5 +52,18 @@ public class SoftwareEntity extends BaseEntity {
             classroomSoftwares.remove(classroomSoftware);
             classroomSoftware.setSoftware(null);
         }
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        SoftwareEntity that = (SoftwareEntity) o;
+        return Objects.equals(id, that.id);
     }
 }

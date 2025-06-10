@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -56,8 +57,15 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     public FacultyEntity update(long id, FacultyEntity entity) {
         validate(entity, id);
         FacultyEntity existsEntity = get(id);
-        existsEntity.setName(entity.getName());
-        syncDepartments(existsEntity, entity.getDepartments());
+        // Обновляем только те поля, которые были переданы
+        if (entity.getName() != null) {
+            existsEntity.setName(entity.getName());
+        }
+
+        // Синхронизируем кафедры, если они были переданы
+        if (entity.getDepartments() != null) {
+            syncDepartments(existsEntity, entity.getDepartments());
+        }
         return facultyRepository.save(existsEntity);
     }
 
@@ -89,6 +97,11 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     }
 
     private void syncDepartments(FacultyEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
+        if (updatedDepartments == null || updatedDepartments.isEmpty()) {
+            // Если список кафедр пуст, ничего не делаем
+            return;
+        }
+
         // Находим кафедры для удаления
         Set<DepartmentEntity> departmentsToRemove = existsEntity.getDepartments().stream()
                 .filter(department -> !updatedDepartments.contains(department))
@@ -106,4 +119,26 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
             }
         }
     }
+
+//    private void syncDepartments(FacultyEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
+//        Set<DepartmentEntity> currentDepartments = new HashSet<>(existsEntity.getDepartments());
+//        Set<DepartmentEntity> updatedDepartmentsCopy = new HashSet<>(updatedDepartments);
+//
+//        // Находим аудитории для удаления
+//        Set<DepartmentEntity> departmentsToRemove = currentDepartments.stream()
+//                .filter(department -> !updatedDepartmentsCopy.contains(department))
+//                .collect(Collectors.toSet());
+//
+//        // Удаляем найденные аудитории
+//        for (DepartmentEntity department : departmentsToRemove) {
+//            existsEntity.removeDepartment(department);
+//        }
+//
+//        // Добавляем новые или обновляем существующие аудитории
+//        for (DepartmentEntity department : updatedDepartmentsCopy) {
+//            if (!currentDepartments.contains(department)) {
+//                existsEntity.addDepartment(department);
+//            }
+//        }
+//    }
 }

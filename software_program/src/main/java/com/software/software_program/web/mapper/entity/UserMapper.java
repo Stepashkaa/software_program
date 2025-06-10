@@ -1,5 +1,6 @@
 package com.software.software_program.web.mapper.entity;
 
+import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.NotificationEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.model.entity.UserEntity;
@@ -48,6 +49,18 @@ public class UserMapper {
                         .map(SoftwareRequestEntity::getDescription)
                         .collect(Collectors.toList())
         );
+        dto.setDepartmentIds(
+                entity.getDepartments()
+                        .stream()
+                        .map(DepartmentEntity::getId)
+                        .collect(Collectors.toList())
+        );
+        dto.setDepartmentNames(
+                entity.getDepartments()
+                        .stream()
+                        .map(DepartmentEntity::getName)
+                        .collect(Collectors.toList())
+        );
 
         return dto;
     }
@@ -64,6 +77,7 @@ public class UserMapper {
 
         entity.setNotifications(new HashSet<>());
         entity.setSoftwareRequests(new HashSet<>());
+        entity.setDepartments(new HashSet<>());
 
         return entity;
     }

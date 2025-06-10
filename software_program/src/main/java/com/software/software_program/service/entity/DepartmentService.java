@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -25,7 +26,6 @@ import java.util.stream.StreamSupport;
 public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     private final DepartmentRepository repository;
     private final ClassroomSoftwareRepository classroomSoftwareRepo;
-    private final DepartmentRepository departmentRepository;
 
     @Transactional(readOnly = true)
     public List<DepartmentEntity> getAll(String name) {
@@ -72,7 +72,6 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
             throw new IllegalArgumentException("Head of the department must not be null during update");
         }
         syncClassrooms(existsEntity, entity.getClassrooms());
-//        syncReports(existsEntity, entity.getReports());
         return repository.save(existsEntity);
     }
 
@@ -119,9 +118,12 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     }
 
     private void syncClassrooms(DepartmentEntity existsEntity, Set<ClassroomEntity> updatedClassrooms) {
+        Set<ClassroomEntity> currentClassrooms = new HashSet<>(existsEntity.getClassrooms());
+        Set<ClassroomEntity> updatedClassroomsCopy = new HashSet<>(updatedClassrooms);
+
         // Находим аудитории для удаления
-        Set<ClassroomEntity> classroomsToRemove = existsEntity.getClassrooms().stream()
-                .filter(classroom -> !updatedClassrooms.contains(classroom))
+        Set<ClassroomEntity> classroomsToRemove = currentClassrooms.stream()
+                .filter(classroom -> !updatedClassroomsCopy.contains(classroom))
                 .collect(Collectors.toSet());
 
         // Удаляем найденные аудитории
@@ -130,8 +132,8 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         }
 
         // Добавляем новые или обновляем существующие аудитории
-        for (ClassroomEntity classroom : updatedClassrooms) {
-            if (!existsEntity.getClassrooms().contains(classroom)) {
+        for (ClassroomEntity classroom : updatedClassroomsCopy) {
+            if (!currentClassrooms.contains(classroom)) {
                 existsEntity.addClassroom(classroom);
             }
         }

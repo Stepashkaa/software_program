@@ -14,10 +14,11 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
+import java.util.Objects;
+
 @Getter
 @Setter
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "equipment")
 public class EquipmentEntity extends BaseEntity {
@@ -43,4 +44,17 @@ public class EquipmentEntity extends BaseEntity {
         this.serialNumber = serialNumber;
         this.classroom = classroom;
     }
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Используем только id
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        EquipmentEntity that = (EquipmentEntity) o;
+        return Objects.equals(id, that.id);
+    }
+
 }

@@ -41,6 +41,7 @@ public class SecurityConfiguration {
                                 .map(ApiPathExclusion::getPath)
                                 .toArray(String[]::new)).permitAll()
                         .requestMatchers(Constants.API_URL + Constants.ADMIN_PREFIX + "/**").hasAnyRole(UserRole.ADMIN.name(), UserRole.SUPER_ADMIN.name())
+                        .requestMatchers(Constants.API_URL + "/teacher/**").hasRole(UserRole.TEACHER.name())
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
