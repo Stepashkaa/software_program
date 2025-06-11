@@ -27,7 +27,6 @@ public class EquipmentDto {
     private String serialNumber;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long classroomId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

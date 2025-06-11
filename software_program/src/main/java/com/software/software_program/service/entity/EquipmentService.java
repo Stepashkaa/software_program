@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Service
 @RequiredArgsConstructor
@@ -21,18 +22,19 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     private final EquipmentRepository equipmentRepository;
 
     @Transactional(readOnly = true)
-    public Page<EquipmentEntity> getAll(String type, String serialNumber, Long classroomId, Pageable pageable) {
-        return equipmentRepository.findAllByFilters(type, serialNumber, classroomId, pageable);
+    public List<EquipmentEntity> getAll(String name) {
+        if (name == null || name.isBlank()) {
+            return StreamSupport.stream(equipmentRepository.findAll().spliterator(), false).toList();
+        }
+        return equipmentRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Transactional(readOnly = true)
-    public List<EquipmentEntity> getAll(String type, String serialNumber, Long classroomId) {
-        if (type == null && serialNumber == null && classroomId == null) {
-            return equipmentRepository.findAll();
+    public Page<EquipmentEntity> getAll(String name, Pageable pageable) {
+        if (name == null || name.isBlank()) {
+            return equipmentRepository.findAll(pageable);
         }
-        return equipmentRepository.findAll().stream()
-                .filter(equipment -> matchesFilters(equipment, type, serialNumber, classroomId))
-                .collect(Collectors.toList());
+        return equipmentRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -86,10 +88,15 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
         }
     }
 
-    private boolean matchesFilters(EquipmentEntity equipment, String type, String serialNumber, Long classroomId) {
+    private boolean matchesFilters(
+            EquipmentEntity equipment,
+            String name,
+            String type,
+            String serialNumber
+    ) {
+        boolean matchesName = name == null || equipment.getName().toLowerCase().contains(name.toLowerCase());
         boolean matchesType = type == null || equipment.getType().toLowerCase().contains(type.toLowerCase());
         boolean matchesSerialNumber = serialNumber == null || equipment.getSerialNumber().toLowerCase().contains(serialNumber.toLowerCase());
-        boolean matchesClassroomId = classroomId == null || equipment.getClassroom().getId().equals(classroomId);
-        return matchesType && matchesSerialNumber && matchesClassroomId;
+        return matchesName && matchesType && matchesSerialNumber;
     }
 }

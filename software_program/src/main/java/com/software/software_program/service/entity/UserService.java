@@ -2,12 +2,16 @@ package com.software.software_program.service.entity;
 
 import com.software.software_program.core.configuration.Constants;
 import com.software.software_program.core.error.NotFoundException;
+import com.software.software_program.core.utility.JwtUtils;
 import com.software.software_program.core.utility.ValidationUtils;
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.repository.UserRepository;
+import com.software.software_program.web.dto.authentication.AuthResponseDto;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +31,7 @@ import java.util.stream.StreamSupport;
 public class UserService extends AbstractEntityService<UserEntity> {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
     @Transactional(readOnly = true)
     public List<UserEntity> getAll() {
@@ -63,6 +68,10 @@ public class UserService extends AbstractEntityService<UserEntity> {
         return repository.save(existsEntity);
     }
 
+    public UserEntity findByEmail(String email) {
+        return repository.findByEmail(email).orElse(null);
+    }
+
     @Transactional
     public UserEntity delete(long id) {
         final UserEntity existsEntity = get(id);
@@ -70,33 +79,53 @@ public class UserService extends AbstractEntityService<UserEntity> {
         return existsEntity;
     }
 
-    @Transactional(readOnly = true)
-    public UserEntity getByEmail(String email) {
-        return repository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found"));
+    public UserEntity register(UserEntity user) {
+        if (repository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("User with this email already exists");
+        }
+
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        return repository.save(user);
     }
+
+    public AuthResponseDto login(String email, String rawPassword) {
+        UserEntity user = repository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            throw new BadCredentialsException("Invalid password");
+        }
+
+        String accessToken = jwtUtils.generateAccessToken(user);
+        String refreshToken = jwtUtils.generateRefreshToken(user);
+
+        AuthResponseDto dto = new AuthResponseDto();
+        dto.setAccessToken(accessToken);
+        dto.setRefreshToken(refreshToken);
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+
+        return dto;
+    }
+
+//    @Transactional(readOnly = true)
+//    public UserEntity getByEmail(String email) {
+//        return repository.findByEmail(email)
+//                .orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found"));
+//    }
 
     @Override
     protected void validate(UserEntity entity, Long id) {
         if (entity == null) {
             throw new IllegalArgumentException("User entity is null");
         }
-        validateStringField(entity.getEmail(), "User email");
-        ValidationUtils.validateEmailFormat(entity.getEmail());
-        validateStringField(entity.getFullName(), "Full name");
-        validateStringField(entity.getPassword(), "User password");
-        if (!entity.getPassword().matches(Constants.PASSWORD_PATTERN)) {
-            throw new IllegalArgumentException("Password has invalid format: " + entity.getPassword());
-        }
-        validateStringField(entity.getPhoneNumber(), "User phone number");
-        entity.setPhoneNumber(normalizePhoneNumber(entity.getPhoneNumber()));
-        if (entity.getRole() == null) {
-            throw new IllegalArgumentException("User role must not be null");
-        }
-        final Optional<UserEntity> existingUser = repository.findByEmail(entity.getEmail());
-        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
+        validateStringField(String.valueOf(entity.getRole()), "Role user");
+        validateStringField(entity.getEmail(), "Email");
+
+        final var existingByEmail = repository.findByEmail(entity.getEmail());
+        if (existingByEmail.isPresent() && !existingByEmail.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("User with email %s already exists", entity.getEmail())
+                    String.format("User with email '%s' already exists", entity.getEmail())
             );
         }
     }
@@ -132,5 +161,9 @@ public class UserService extends AbstractEntityService<UserEntity> {
             }
         }
     }
+    public Optional<UserEntity> getByEmail(String email) {
+        return repository.findByEmail(email);
+    }
+
 
 }

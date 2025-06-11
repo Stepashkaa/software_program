@@ -1,5 +1,6 @@
 package com.software.software_program.repository;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,11 @@ import java.util.Optional;
 public interface SoftwareRepository extends JpaRepository<SoftwareEntity, Long>, JpaSpecificationExecutor<SoftwareEntity> {
     Optional<SoftwareEntity> findByNameIgnoreCase(@Param("name") String name);
 
+    @Query("""
+        SELECT c FROM SoftwareEntity c
+        WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :name, '%'))
+           OR LOWER(:name) LIKE LOWER(CONCAT('%', c.name, '%'))
+    """)
     List<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name);
 
     Page<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);

@@ -1,5 +1,6 @@
 package com.software.software_program.service.entity;
 
+import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.model.entity.SoftwareEntity;
@@ -36,10 +37,11 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
     }
 
     @Transactional(readOnly = true)
-    public List<SoftwareEntity> getAll(String name, String version, String description) {
-        return StreamSupport.stream(softwareRepository.findAll().spliterator(), false)
-                .filter(software -> matchesFilters(software, name, version, description))
-                .collect(Collectors.toList());
+    public List<SoftwareEntity> getAll(String name) {
+        if (name == null || name.isBlank()) {
+            return StreamSupport.stream(softwareRepository.findAll().spliterator(), false).toList();
+        }
+        return softwareRepository.findByNameContainingIgnoreCase(name);
     }
 
     @Transactional(readOnly = true)

@@ -123,6 +123,12 @@
 			<scope>system</scope>
 			<systemPath>${basedir}/src/main/resources/static/report/dejavu-sans.jar</systemPath>
 		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>RELEASE</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

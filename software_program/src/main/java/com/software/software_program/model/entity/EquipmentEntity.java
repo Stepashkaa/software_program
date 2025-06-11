@@ -19,6 +19,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "equipment")
 public class EquipmentEntity extends BaseEntity {
@@ -27,11 +28,11 @@ public class EquipmentEntity extends BaseEntity {
     private String name;
 
     @Check(constraints = "length(type) >= 1")
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, columnDefinition = "TEXT")
     private String type;
 
     @Check(constraints = "length(serial_number) >= 1")
-    @Column(name = "serial_number", nullable = false, unique = true, length = 50)
+    @Column(name = "serial_number", nullable = false, unique = true, length = 50, columnDefinition = "TEXT")
     private String serialNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)

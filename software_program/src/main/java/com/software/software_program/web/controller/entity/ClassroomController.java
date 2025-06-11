@@ -21,13 +21,20 @@ public class ClassroomController {
     private final ClassroomService classroomService;
     private final ClassroomMapper classroomMapper;
 
+//    @GetMapping
+//    public PageDto<ClassroomDto> getAll(
+//            @RequestParam(name = "name", required = false) String name,
+//            @RequestParam(name = "page", defaultValue = "0") int page,
+//            @RequestParam(name = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int size)
+//    {
+//        return PageDtoMapper.toDto(classroomService.getAll(name, page, size), classroomMapper::toDto);
+//    }
+
     @GetMapping
-    public PageDto<ClassroomDto> getAll(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int size)
-    {
-        return PageDtoMapper.toDto(classroomService.getAll(name, page, size), classroomMapper::toDto);
+    public List<ClassroomDto> getAll() {
+        return classroomService.getAll(null).stream()
+                .map(classroomMapper::toDto)
+                .toList();
     }
     @GetMapping("/all")
     public List<ClassroomDto> getAllByName(@RequestParam(name = "name", defaultValue = "") String name) {

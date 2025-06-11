@@ -3,14 +3,18 @@ package com.software.software_program.core.utility;
 import com.software.software_program.core.configuration.AppConfigurationProperties;
 import com.software.software_program.model.entity.UserEntity;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,88 +24,52 @@ import java.util.function.Function;
 @Component
 @AllArgsConstructor
 public class JwtUtils {
-    private final AppConfigurationProperties appConfigurationProperties;
+    private final Key signingKey = Keys.secretKeyFor(SignatureAlgorithm.HS512); // авто-генерация
 
-    public String extractEmail(final String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public Long extractUserId(final String token) {
-        Object userIdClaim = extractAllClaims(token).get("user_id");
-        if (userIdClaim == null) {
-            return null;
-        }
-        if (userIdClaim instanceof Number) {
-            return ((Number) userIdClaim).longValue();
-        }
-        if (userIdClaim instanceof String) {
-            return Long.parseLong((String) userIdClaim);
-        }
-        throw new IllegalArgumentException("Invalid user_id type in token");
-    }
-
-    public Date extractExpiration(final String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public <T> T extractClaim(final String token, final Function<Claims, T> claimsResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
-    }
-
-    private Claims extractAllClaims(String token) {
-        String secretKey = appConfigurationProperties.getJwt().getSecretKey();
-        if (secretKey == null || secretKey.isEmpty()) {
-            System.out.println("JWT Secret Key is missing!");
-            return null; // или выбросьте исключение
-        }
-        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-
-        if (token.startsWith("Bearer ")) {
-            token = token.substring(7);
-            System.out.println("Generated new secret key: " + secretKey);
-        }
-
-        return Jwts.parser()
-                .verifyWith(key)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    public Boolean isTokenExpired(final String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    public String generateAccessToken(final UserEntity user) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("account_creation_timestamp", user.getCreatedAt().toString());
-        claims.put("user_id", user.getId());
-        claims.put("email", user.getEmail());
-        claims.put("role", user.getRole().name());
-        return createToken(claims, user.getEmail(), TimeUnit.MINUTES.toMillis(30));
-    }
-
-    public String generateRefreshToken(final UserEntity user) {
-        Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, user.getEmail(), TimeUnit.DAYS.toMillis(30));
-    }
-
-    private String createToken(final Map<String, Object> claims, final String subject, final Long expiration) {
-        String secretKey = appConfigurationProperties.getJwt().getSecretKey();
-        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
-
+    public String generateAccessToken(UserEntity user) {
         return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiration))
-                .signWith(key)
+                .setSubject(user.getEmail())
+                .claim("role", user.getRole().name())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30 мин
+                .signWith(signingKey)
                 .compact();
     }
 
-    public Boolean validateToken(final String token, final UserDetails userDetails) {
-        final String username = extractEmail(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public String generateRefreshToken(UserEntity user) {
+        return Jwts.builder()
+                .setSubject(user.getEmail())
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24 * 7)) // 7 дней
+                .signWith(signingKey)
+                .compact();
     }
+
+    public String extractEmail(String token) {
+        return Jwts.parser()
+                .setSigningKey(signingKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getSubject();
+    }
+
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(signingKey)
+                    .build()
+                    .parseSignedClaims(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    public String getTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
+
 }

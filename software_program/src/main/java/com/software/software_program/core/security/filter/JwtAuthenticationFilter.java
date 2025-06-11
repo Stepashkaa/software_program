@@ -24,41 +24,28 @@ import java.io.IOException;
 @Component
 @AllArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
     private final JwtUtils jwtUtils;
-    private final CustomUserDetailService customUserDetailService;
+    private final CustomUserDetailService customUserDetailsService;
 
     @Override
-    protected void doFilterInternal(
-            @NonNull HttpServletRequest request,
-            @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String path = request.getRequestURI();
-        if (path.equals("/api/v1/refresh-token") || path.equals("/api/v1/refresh-token-direct")) {
-            filterChain.doFilter(request, response);
-            return;
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+        String token = jwtUtils.getTokenFromRequest(request);
+
+        if (token != null && jwtUtils.validateToken(token)) {
+            String email = jwtUtils.extractEmail(token);
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+
+            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities()
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-        final var authorizationHeader = request.getHeader("Authorization");
 
-        if (authorizationHeader != null) {
-            if (authorizationHeader.startsWith("Bearer ")) {
-                final var token = authorizationHeader.substring(7);
-                final var userId = jwtUtils.extractUserId(token);
-
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = customUserDetailService.loadUserByUsername(String.valueOf(userId));
-
-                    if (jwtUtils.validateToken(token, userDetails)) {
-
-                        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        usernamePasswordAuthenticationToken
-                                .setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext()
-                                .setAuthentication(usernamePasswordAuthenticationToken);
-                    }
-                }
-            }
-        }
         filterChain.doFilter(request, response);
     }
 }

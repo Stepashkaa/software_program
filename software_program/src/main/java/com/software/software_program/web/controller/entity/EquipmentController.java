@@ -1,6 +1,7 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.web.dto.entity.DepartmentDto;
 import com.software.software_program.web.dto.entity.EquipmentDto;
 import com.software.software_program.service.entity.EquipmentService;
 import com.software.software_program.web.dto.pagination.PageDto;
@@ -23,27 +24,17 @@ public class EquipmentController {
 
     private final EquipmentService equipmentService;
     private final EquipmentMapper equipmentMapper;
-    @GetMapping
-    public PageDto<EquipmentDto> getAll(
-            @RequestParam(name = "type", required = false) String type,
-            @RequestParam(name = "serialNumber", required = false) String serialNumber,
-            @RequestParam(name = "classroomId", required = false) Long classroomId,
-            @RequestParam(name = "page", defaultValue = "0") int page,
-            @RequestParam(name = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int size)
-    {
-        Pageable pageable = PageRequest.of(page, size);
-        return PageDtoMapper.toDto(
-                equipmentService.getAll(type, serialNumber, classroomId, pageable),
-                equipmentMapper::toDto
-        );
-    }
-    @GetMapping("/all")
-    public List<EquipmentDto> getAllWithoutPagination(
-            @RequestParam(name = "type", required = false) String type,
-            @RequestParam(name = "serialNumber", required = false) String serialNumber,
-            @RequestParam(name = "classroomId", required = false) Long classroomId
+    @GetMapping("/paged")
+    public Page<EquipmentDto> getAll(
+            @RequestParam(name = "name", required = false) String name,
+            Pageable pageable
     ) {
-        return equipmentService.getAll(type, serialNumber, classroomId).stream()
+        return equipmentService.getAll(name, pageable)
+                .map(equipmentMapper::toDto);
+    }
+    @GetMapping
+    public List<EquipmentDto> getAll(@RequestParam(name = "name", defaultValue = "") String name) {
+        return equipmentService.getAll(name).stream()
                 .map(equipmentMapper::toDto)
                 .toList();
     }

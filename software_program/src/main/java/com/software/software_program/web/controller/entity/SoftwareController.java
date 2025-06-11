@@ -1,6 +1,7 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.web.dto.entity.ClassroomDto;
 import com.software.software_program.web.dto.entity.SoftwareDto;
 import com.software.software_program.service.entity.SoftwareService;
 import com.software.software_program.web.mapper.entity.SoftwareMapper;
@@ -21,23 +22,27 @@ public class SoftwareController {
     private final SoftwareService softwareService;
     private final SoftwareMapper softwareMapper;
 
+//    @GetMapping
+//    public Page<SoftwareDto> getAllByFilters(
+//            @RequestParam(name = "name", required = false) String name,
+//            @RequestParam(name = "version", required = false) String version,
+//            @RequestParam(name = "description", required = false) String description,
+//            Pageable pageable
+//    ) {
+//        return softwareService.getAllByFilters(name, version, description, pageable)
+//                .map(softwareMapper::toDto);
+//    }
+
     @GetMapping
-    public Page<SoftwareDto> getAllByFilters(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "version", required = false) String version,
-            @RequestParam(name = "description", required = false) String description,
-            Pageable pageable
-    ) {
-        return softwareService.getAllByFilters(name, version, description, pageable)
-                .map(softwareMapper::toDto);
+    public List<SoftwareDto> getAll() {
+        return softwareService.getAll(null).stream()
+                .map(softwareMapper::toDto)
+                .toList();
     }
     @GetMapping("/all")
     public List<SoftwareDto> getAll(
-            @RequestParam(name = "name", required = false) String name,
-            @RequestParam(name = "version", required = false) String version,
-            @RequestParam(name = "description", required = false) String description
-    ) {
-        return softwareService.getAll(name, version, description).stream()
+            @RequestParam(name = "name", required = false) String name) {
+        return softwareService.getAll(name).stream()
                 .map(softwareMapper::toDto)
                 .toList();
     }

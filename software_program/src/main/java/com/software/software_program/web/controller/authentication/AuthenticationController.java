@@ -1,95 +1,86 @@
 package com.software.software_program.web.controller.authentication;
 
 import com.software.software_program.core.configuration.Constants;
-import com.software.software_program.service.authentication.AuthenticationService;
+import com.software.software_program.core.utility.JwtUtils;
+//import com.software.software_program.service.authentication.AuthenticationService;
+import com.software.software_program.model.entity.UserEntity;
+import com.software.software_program.model.enums.UserRole;
 import com.software.software_program.service.entity.UserService;
 import com.software.software_program.web.dto.authentication.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping(Constants.API_URL)
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final AuthenticationService authenticationService;
+
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtils jwtUtils;
 
-    @PostMapping(value = "/login")
-    public ResponseEntity<String> userLoginHandler(@RequestBody @Valid final LoginRequestDto userLoginRequestDto) {
-        return ResponseEntity.ok(authenticationService.login(userLoginRequestDto));
-    }
-    @PostMapping(value = "/send-otp")
-    public ResponseEntity<Void> sendOtpHandler(@RequestBody @Valid final OtpRequestDto otpRequestDto) {
-        authenticationService.sendOtp(userService.getByEmail(otpRequestDto.getEmail()), Constants.OTP_EMAIL_SUBJECT);
-        return ResponseEntity.noContent().build();
-    }
+    @PostMapping("/register")
+    public ResponseEntity<AuthResponseDto> register(@RequestBody @Valid AuthRequestDto dto) {
+        UserEntity user = new UserEntity();
+        user.setEmail(dto.getEmail());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(UserRole.ADMIN);
 
-    @PostMapping(value = "/invalidate-otp")
-    public ResponseEntity<Void> invalidateOtp(@RequestBody @Valid final OtpRequestDto otpRequestDto) {
-        authenticationService.invalidateOtp(otpRequestDto.getEmail());
-        return ResponseEntity.noContent().build();
-    }
+        UserEntity savedUser = userService.register(user);
 
-    @PostMapping(value = "/verify-otp")
-    public ResponseEntity<LoginSuccessDto> otpVerificationHandler(@RequestBody @Valid final OtpVerificationRequestDto otpVerificationRequestDto,
-                                                  HttpServletResponse response) {
-        LoginSuccessDto loginSuccessDto = authenticationService.verifyOtp(otpVerificationRequestDto);
+        AuthResponseDto response = new AuthResponseDto();
+        response.setAccessToken(jwtUtils.generateAccessToken(savedUser));
+        response.setRefreshToken(jwtUtils.generateRefreshToken(savedUser));
+        response.setEmail(savedUser.getEmail());
+        response.setRole(savedUser.getRole());
 
-        ResponseCookie refreshTokenCookie = createRefreshTokenCookie(loginSuccessDto.getRefreshToken());
-        response.setHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-
-        loginSuccessDto.setRefreshToken(null);
-        return ResponseEntity.ok(loginSuccessDto);
+        return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/verify-otp-direct")
-    public LoginSuccessDto otpVerificationDirectHandler(@RequestBody @Valid final OtpVerificationRequestDto otpVerificationRequestDto) {
-        return authenticationService.verifyOtp(otpVerificationRequestDto);
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto dto) {
+        AuthResponseDto response = userService.login(dto.getEmail(), dto.getPassword());
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping(value = "/refresh-token")
-    public ResponseEntity<LoginSuccessDto> tokenRefresherHandler(@CookieValue(value = "refreshToken", required = false) String refreshToken,
-                                                 HttpServletResponse response) {
-        LoginSuccessDto loginSuccessDto = authenticationService.refreshToken(refreshToken);
+    @PostMapping("/refresh-token")
+    public ResponseEntity<AuthResponseDto> refreshToken(HttpServletRequest request) {
+        String token = jwtUtils.getTokenFromRequest(request);
 
-        ResponseCookie refreshTokenCookie = createRefreshTokenCookie(loginSuccessDto.getRefreshToken());
-        response.setHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        if (token == null || !jwtUtils.validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        loginSuccessDto.setRefreshToken(null);
-        return ResponseEntity.ok(loginSuccessDto);
+        String email = jwtUtils.extractEmail(token);
+        UserEntity user = userService.findByEmail(email);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        AuthResponseDto dto = new AuthResponseDto();
+        dto.setAccessToken(jwtUtils.generateAccessToken(user));
+        dto.setRefreshToken(jwtUtils.generateRefreshToken(user));
+        dto.setEmail(user.getEmail());
+        dto.setRole(user.getRole());
+
+        return ResponseEntity.ok(dto);
     }
 
-    @PutMapping(value = "/refresh-token-direct")
-    public LoginSuccessDto tokenRefresherDirectHandler(@RequestBody(required = false) RefreshTokenRequestDto refreshTokenRequestDto) {
-        return authenticationService.refreshToken(refreshTokenRequestDto.getRefreshToken());
-    }
-
-    @PostMapping(value = "/logout")
-    public ResponseEntity<Void> logoutHandler(HttpServletResponse response) {
-        ResponseCookie deleteRefreshTokenCookie = ResponseCookie.from("refreshToken", "")
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/api/v1/refresh-token")
-                .maxAge(0)
-                .build();
-        response.setHeader(HttpHeaders.SET_COOKIE, deleteRefreshTokenCookie.toString());
-
-        return ResponseEntity.noContent().build();
-    }
-
-    private ResponseCookie createRefreshTokenCookie(String refreshToken) {
-        return ResponseCookie.from("refreshToken", refreshToken)
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/api/v1/refresh-token")
-                .maxAge(30 * 24 * 60 * 60)
-                .build();
+    // ✅ Новый метод для выхода
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        SecurityContextHolder.clearContext();
+        return ResponseEntity.ok().build();
     }
 }
+

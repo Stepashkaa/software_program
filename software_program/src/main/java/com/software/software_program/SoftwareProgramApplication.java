@@ -26,7 +26,9 @@ public class SoftwareProgramApplication implements CommandLineRunner {
 	@Override
 	@Transactional
 	public void run(String... args) {
-		initializer.initializeAll();
+		if (args.length > 0 && Arrays.asList(args).contains("--populate")) {
+			initializer.initializeAll();
+		}
 	}
 
 }

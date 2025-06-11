@@ -26,7 +26,6 @@ public class ClassroomDto {
     private Integer capacity;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long departmentId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

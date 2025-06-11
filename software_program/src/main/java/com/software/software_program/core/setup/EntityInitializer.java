@@ -6,6 +6,9 @@ import com.software.software_program.model.enums.RequestStatus;
 import com.software.software_program.model.enums.UserRole;
 import com.software.software_program.service.entity.*;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.software.software_program.core.log.Loggable;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,12 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 
 @Component
 @RequiredArgsConstructor
 public class EntityInitializer {
+    private final PasswordEncoder passwordEncoder;
+
+    private static final Logger logger = LoggerFactory.getLogger(EntityInitializer.class);
+
 
     private final FacultyService facultyService;
     private final DepartmentService departmentService;
@@ -33,22 +40,61 @@ public class EntityInitializer {
     @Loggable
     @Transactional
     public void initializeAll() {
-        createUser();
+        logger.info("Initializing database...");
+
+//        createUser();
+
+//        createUser();
         List<FacultyEntity> faculties = createFaculties();
+        if (faculties.isEmpty()) {
+            logger.warn("No faculties created or found.");
+
+        }
         List<UserEntity> heads = createHeads(); // Создаем список заведующих
+        if (heads.isEmpty()) {
+            logger.warn("No teachers created.");
+
+        }
         List<DepartmentEntity> departments = createDepartments(faculties, heads); // Передаем заведующих
+        if (departments.isEmpty()) {
+            logger.warn("No departments created or found.");
+
+        }
         List<ClassroomEntity> classrooms = createClassrooms(departments);
+        if (classrooms.isEmpty()) {
+            logger.warn("No classrooms created.");
+
+        }
         List<SoftwareEntity> softwares = createSoftwares();
+        if (softwares.isEmpty()) {
+            logger.warn("No softwares created.");
+
+        }
         List<EquipmentEntity> equipments = createEquipments(classrooms);
+        if (equipments.isEmpty()) {
+            logger.warn("No equipments created.");
+
+        }
         associateClassroomSoftware(classrooms, softwares);
+
+        List<UserEntity> users = createUsers();;
+        if (users.isEmpty()) {
+            logger.warn("No users created.");
+
+        }
+
+        logger.info("Database initialization completed.");
         // createSoftwareRequests(classrooms, softwares);
     }
 
     @Loggable
     private List<FacultyEntity> createFaculties() {
         List<FacultyEntity> faculties = new ArrayList<>();
-        faculties.add(facultyService.create(new FacultyEntity("Факультет информационных технологий")));
-        faculties.add(facultyService.create(new FacultyEntity("Факультет экономики и управления")));
+        if (facultyService.getAll("").isEmpty()) {
+            faculties.add(facultyService.create(new FacultyEntity("Факультет информационных технологий")));
+            faculties.add(facultyService.create(new FacultyEntity("Факультет экономики и управления")));
+            logger.info("Faculties created.");
+        }
         return faculties;
     }
 
@@ -64,6 +110,7 @@ public class EntityInitializer {
     // Вспомогательный метод для создания пользователя
     private UserEntity createUser(String fullName, String email, String phoneNumber, String password, UserRole role) {
         UserEntity user = new UserEntity(fullName, email, phoneNumber, password, role);
+//        user.setEmailVerified(false);
         return userService.create(user);
     }
 
@@ -79,36 +126,48 @@ public class EntityInitializer {
     @Loggable
     private List<DepartmentEntity> createDepartments(List<FacultyEntity> faculties, List<UserEntity> heads) {
         List<DepartmentEntity> departments = new ArrayList<>();
-        departments.add(createDepartment("Кафедра программирования", faculties.get(0), heads.get(0)));
-        departments.add(createDepartment("Кафедра системного администрирования", faculties.get(0), heads.get(1)));
-        departments.add(createDepartment("Кафедра экономики", faculties.get(1), heads.get(2)));
+        if (departmentService.getAll("").isEmpty()) {
+            departments.add(createDepartment("Кафедра программирования", faculties.get(0), heads.get(0)));
+            departments.add(createDepartment("Кафедра системного администрирования", faculties.get(0), heads.get(1)));
+            departments.add(createDepartment("Кафедра экономики", faculties.get(1), heads.get(2)));
+            logger.info("Departments created.");
+        }
         return departments;
     }
 
     @Loggable
     private List<ClassroomEntity> createClassrooms(List<DepartmentEntity> departments) {
         List<ClassroomEntity> classrooms = new ArrayList<>();
-        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 101", 30, departments.get(0))));
-        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 202", 25, departments.get(0))));
-        classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 303", 40, departments.get(1))));
+        if (classroomService.getAll("").isEmpty()) {
+            classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 101", 30, departments.get(0))));
+            classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 202", 25, departments.get(0))));
+            classrooms.add(classroomService.create(new ClassroomEntity("Аудитория 303", 40, departments.get(1))));
+            logger.info("Classrooms created.");
+        }
         return classrooms;
     }
 
     @Loggable
     private List<SoftwareEntity> createSoftwares() {
         List<SoftwareEntity> softwares = new ArrayList<>();
-        softwares.add(softwareService.create(new SoftwareEntity("Microsoft Office", "2021", "Пакет офисных приложений")));
-        softwares.add(softwareService.create(new SoftwareEntity("IntelliJ IDEA", "2023.1", "IDE для разработки на Java")));
-        softwares.add(softwareService.create(new SoftwareEntity("AutoCAD", "2023", "Система автоматизированного проектирования")));
+        if (softwareService.getAll("").isEmpty()) {
+            softwares.add(softwareService.create(new SoftwareEntity("Microsoft Office", "2021", "Пакет офисных приложений")));
+            softwares.add(softwareService.create(new SoftwareEntity("IntelliJ IDEA", "2023.1", "IDE для разработки на Java")));
+            softwares.add(softwareService.create(new SoftwareEntity("AutoCAD", "2023", "Система автоматизированного проектирования")));
+            logger.info("softwares created.");
+        }
         return softwares;
     }
 
     @Loggable
     private List<EquipmentEntity> createEquipments(List<ClassroomEntity> classrooms) {
         List<EquipmentEntity> equipments = new ArrayList<>();
-        equipments.add(equipmentService.create(new EquipmentEntity("Проектор", "Мультимедийный", "PRJ12345", classrooms.get(0))));
-        equipments.add(equipmentService.create(new EquipmentEntity("Компьютер", "Рабочая станция", "PC67890", classrooms.get(1))));
-        equipments.add(equipmentService.create(new EquipmentEntity("Интерактивная доска", "Образовательная", "BD09876", classrooms.get(2))));
+        if (equipmentService.getAll("").isEmpty()) {
+            equipments.add(equipmentService.create(new EquipmentEntity("Проектор", "Мультимедийный", "PRJ12345", classrooms.get(0))));
+            equipments.add(equipmentService.create(new EquipmentEntity("Компьютер", "Рабочая станция", "PC67890", classrooms.get(1))));
+            equipments.add(equipmentService.create(new EquipmentEntity("Интерактивная доска", "Образовательная", "BD09876", classrooms.get(2))));
+            logger.info("equipments created.");
+        }
         return equipments;
     }
 
@@ -127,17 +186,37 @@ public class EntityInitializer {
         classroomSoftwareService.create(classroomSoftware3);
     }
 
-    @Loggable
-    private void createUser() {
-        String email = appConfigurationProperties.getAdmin().getEmail();
-        System.out.println("CREATING USER WITH EMAIL: " + email);
+//    @Loggable
+//    private void createUser() {
+//        String email = appConfigurationProperties.getAdmin().getEmail();
+//        System.out.println("CREATING USER WITH EMAIL: " + email);
+//
+//        userService.create(new UserEntity(
+//                "Admin",
+//                email,
+//                appConfigurationProperties.getAdmin().getNumber(),
+//                appConfigurationProperties.getAdmin().getPassword(),
+//
+//                UserRole.SUPER_ADMIN
+//        ));
+//    }
 
-        userService.create(new UserEntity(
-                "Admin",
-                email,
-                appConfigurationProperties.getAdmin().getNumber(),
-                appConfigurationProperties.getAdmin().getPassword(),
-                UserRole.SUPER_ADMIN
-        ));
+    private List<UserEntity> createUsers() {
+        List<UserEntity> users = new ArrayList<>();
+
+        if (userService.getByEmail("afanasevstepan67@gmail.com").isEmpty()) {
+            UserEntity admin = new UserEntity();
+            admin.setEmail("afanasevstepan67@gmail.com");
+            admin.setPassword(passwordEncoder.encode("Pa$sw0rd!"));
+            admin.setRole(UserRole.ADMIN);
+//            admin.setEmailVerified(true);
+
+            users.add(userService.create(admin));
+            logger.info("Admin user created.");
+        } else {
+            logger.warn("Admin user already exists. Skipping creation.");
+        }
+
+        return users;
     }
 }
