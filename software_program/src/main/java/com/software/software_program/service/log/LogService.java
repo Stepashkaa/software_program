@@ -15,15 +15,21 @@ import java.util.stream.Collectors;
 
 @Service
 public class LogService {
-    public List<String> listLogFiles() {
+    public List<String> listLogFiles(String search) {
         File dir = new File(Constants.LOG_PATH);
         if (!dir.exists() || !dir.isDirectory()) {
             throw new IllegalStateException("Log directory does not exist or is not a directory");
         }
 
-        String[] logFiles = dir.list((d, name) -> name.endsWith(".log"));
+        String[] logFiles = dir.list((d, name) -> {
+            boolean matchesExtension = name.endsWith(".log");
+            if (search != null && !search.trim().isEmpty()) {
+                return matchesExtension && name.toLowerCase().contains(search.toLowerCase());
+            }
+            return matchesExtension;
+        });
         if (logFiles == null || logFiles.length == 0) {
-            throw new FileNotFoundException("No log files found");
+            return List.of();
         }
 
         return Arrays.stream(logFiles)

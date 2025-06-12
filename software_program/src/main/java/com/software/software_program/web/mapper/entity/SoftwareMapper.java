@@ -1,7 +1,6 @@
 package com.software.software_program.web.mapper.entity;
 
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
-import com.software.software_program.model.entity.SoftwareEntity;
+import com.software.software_program.model.entity.*;
 import com.software.software_program.web.dto.entity.SoftwareDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -21,16 +20,20 @@ public class SoftwareMapper {
         dto.setVersion(entity.getVersion());
         dto.setDescription(entity.getDescription());
 
-        dto.setClassroomSoftwareIds(
-                entity.getClassroomSoftwares()
-                        .stream()
-                        .map(cs -> cs.getId())
+        dto.setEquipmentIds(
+                entity.getEquipmentSoftwares().stream()
+                        .map(es -> es.getEquipment().getId())
                         .collect(Collectors.toList())
         );
-        dto.setClassroomSoftwareNames(
-                entity.getClassroomSoftwares()
-                        .stream()
-                        .map(cs -> cs.getClassroom().getName()) // Предполагается, что у ClassroomSoftware есть связь с Classroom
+        dto.setEquipmentNames(
+                entity.getEquipmentSoftwares().stream()
+                        .map(es -> es.getEquipment().getName())
+                        .collect(Collectors.toList())
+        );
+
+        dto.setSoftwareRequestIds(
+                entity.getSoftwareRequests().stream()
+                        .map(SoftwareRequestEntity::getId)
                         .collect(Collectors.toList())
         );
 
@@ -45,7 +48,7 @@ public class SoftwareMapper {
         entity.setVersion(dto.getVersion());
         entity.setDescription(dto.getDescription());
 
-        entity.setClassroomSoftwares(new HashSet<>());
+        entity.setEquipmentSoftwares(new HashSet<>());
 
         return entity;
     }

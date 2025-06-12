@@ -19,27 +19,40 @@ public class MapperConfiguration {
     ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
+        // ClassroomEntity -> ClassroomDto
         modelMapper.typeMap(ClassroomEntity.class, ClassroomDto.class).addMappings(mapper -> {
-                    mapper.skip(ClassroomDto::setEquipmentNames);
-                    mapper.skip(ClassroomDto::setClassroomSoftwareNames);
-                });
+            mapper.skip(ClassroomDto::setEquipmentIds);
+            mapper.skip(ClassroomDto::setEquipmentNames);
+        });
 
+        // DepartmentEntity -> DepartmentDto
         modelMapper.typeMap(DepartmentEntity.class, DepartmentDto.class).addMappings(mapper -> {
-                    mapper.skip(DepartmentDto::setClassroomNames);
-//                    mapper.skip(DepartmentDto::setReportNames);
-                });
+            mapper.skip(DepartmentDto::setClassroomIds);
+            mapper.skip(DepartmentDto::setClassroomNames);
+            mapper.map(src -> src.getFaculty().getName(), DepartmentDto::setFacultyName);
+            mapper.map(src -> src.getHead().getFullName(), DepartmentDto::setHeadName);
+        });
 
+        // SoftwareEntity -> SoftwareDto
         modelMapper.typeMap(SoftwareEntity.class, SoftwareDto.class).addMappings(mapper -> {
-                    mapper.skip(SoftwareDto::setClassroomSoftwareNames);
-                });
+            mapper.skip(SoftwareDto::setEquipmentIds);
+            mapper.skip(SoftwareDto::setEquipmentNames);
+        });
 
+        // SoftwareRequestEntity -> SoftwareRequestDto
         modelMapper.typeMap(SoftwareRequestEntity.class, SoftwareRequestDto.class).addMappings(mapper -> {
-                    mapper.map(src -> src.getUser().getFullName(),
-                            SoftwareRequestDto::setUserName);
-                    mapper.map(src -> src.getClassroomSoftware().getSoftware().getName(),
-                            SoftwareRequestDto::setSoftwareName);
-                });
+            mapper.map(src -> src.getUser().getFullName(), SoftwareRequestDto::setUserName);
+            mapper.map(src -> src.getEquipment().getName(), SoftwareRequestDto::setEquipmentName);
+            mapper.map(src -> {
+                if (src.getSoftware() != null) {
+                    return src.getSoftware().getName();
+                } else {
+                    return src.getRequestedSoftwareName();
+                }
+            }, SoftwareRequestDto::setSoftwareName);
+        });
 
         return modelMapper;
     }
+
 }

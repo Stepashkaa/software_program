@@ -31,29 +31,12 @@ public class ClassroomEntity extends BaseEntity {
     private DepartmentEntity department;
 
     @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ClassroomSoftwareEntity> classroomSoftwares = new HashSet<>();
-
-    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EquipmentEntity> equipments = new HashSet<>();
 
     public ClassroomEntity(String name, Integer capacity, DepartmentEntity department) {
         this.name = name;
         this.capacity = capacity;
         this.department = department;
-    }
-
-    public void addClassroomSoftware(ClassroomSoftwareEntity classroomSoftware) {
-        if (classroomSoftware != null) {
-            classroomSoftwares.add(classroomSoftware);
-            classroomSoftware.setClassroom(this);
-        }
-    }
-
-    public void removeClassroomSoftware(ClassroomSoftwareEntity classroomSoftware) {
-        if (classroomSoftware != null) {
-            classroomSoftwares.remove(classroomSoftware);
-            classroomSoftware.setClassroom(null);
-        }
     }
 
     public void addEquipment(EquipmentEntity equipment) {
@@ -70,7 +53,6 @@ public class ClassroomEntity extends BaseEntity {
         }
     }
 
-    // ClassroomEntity.java
     @Override
     public int hashCode() {
         return Objects.hash(id); // Используем только id

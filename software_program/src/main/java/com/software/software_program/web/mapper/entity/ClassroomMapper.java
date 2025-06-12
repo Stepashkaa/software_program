@@ -1,7 +1,6 @@
 package com.software.software_program.web.mapper.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.service.entity.DepartmentService;
@@ -22,26 +21,23 @@ public class ClassroomMapper {
 
     public ClassroomDto toDto(ClassroomEntity entity) {
         ClassroomDto dto = modelMapper.map(entity, ClassroomDto.class);
+
         if (entity.getDepartment() != null) {
             dto.setDepartmentId(entity.getDepartment().getId());
             dto.setDepartmentName(entity.getDepartment().getName());
         }
-        dto.setClassroomSoftwareIds(
-                entity.getClassroomSoftwares()
-                        .stream()
-                        .map(cs -> cs.getSoftware().getId())
-                        .collect(Collectors.toList())
-        );
-        dto.setClassroomSoftwareNames(
-                entity.getClassroomSoftwares()
-                        .stream()
-                        .map(cs -> cs.getSoftware().getName())
-                        .collect(Collectors.toList())
-        );
+
         dto.setEquipmentIds(
                 entity.getEquipments()
                         .stream()
                         .map(EquipmentEntity::getId)
+                        .collect(Collectors.toList())
+        );
+
+        dto.setEquipmentNames(
+                entity.getEquipments()
+                        .stream()
+                        .map(EquipmentEntity::getName) // <-- добавлено
                         .collect(Collectors.toList())
         );
 
@@ -56,9 +52,6 @@ public class ClassroomMapper {
             entity.setDepartment(department);
         }
 
-        if (entity.getClassroomSoftwares() == null) {
-            entity.setClassroomSoftwares(new HashSet<>());
-        }
         if (entity.getEquipments() == null) {
             entity.setEquipments(new HashSet<>());
         }

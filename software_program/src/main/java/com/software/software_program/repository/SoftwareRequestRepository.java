@@ -1,6 +1,5 @@
 package com.software.software_program.repository;
 
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.model.entity.UserEntity;
 import com.software.software_program.model.enums.RequestStatus;
@@ -32,24 +31,24 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
 
     @Query("""
         SELECT sr FROM SoftwareRequestEntity sr
-        JOIN sr.user u
-        JOIN sr.classroomSoftware cs
         WHERE (:status IS NULL OR sr.status = :status)
-          AND (:userId IS NULL OR u.id = :userId)
-          AND (:classroomSoftwareId IS NULL OR cs.id = :classroomSoftwareId)
+          AND (:userId IS NULL OR sr.user.id = :userId)
+          AND (:equipmentId IS NULL OR sr.equipment.id = :equipmentId)
     """)
     Page<SoftwareRequestEntity> findAllByFilters(
             @Param("status") RequestStatus status,
             @Param("userId") Long userId,
-            @Param("classroomSoftwareId") Long classroomSoftwareId,
+            @Param("equipmentId") Long equipmentId,
             Pageable pageable
     );
+
     @Query("SELECT sr FROM SoftwareRequestEntity sr WHERE " +
             "sr.user.id = :userId AND " +
-            "sr.classroomSoftware.id = :classroomSoftwareId AND " +
+            "sr.equipment.id = :equipmentId AND " +
             "sr.requestDate = :requestDate")
-    Optional<SoftwareRequestEntity> findByUserClassroomAndDate(
+    Optional<SoftwareRequestEntity> findByUserEquipmentAndDate(
             @Param("userId") Long userId,
-            @Param("classroomSoftwareId") Long classroomSoftwareId,
-            @Param("requestDate") Date requestDate);
+            @Param("equipmentId") Long equipmentId,
+            @Param("requestDate") Date requestDate
+    );
 }

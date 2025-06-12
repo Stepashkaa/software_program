@@ -91,7 +91,7 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
         final Optional<FacultyEntity> existingUser = facultyRepository.findByNameIgnoreCase(entity.getName());
         if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("User with email %s already exists", entity.getName())
+                    String.format("Faculty name%s already exists", entity.getName())
             );
         }
     }
@@ -120,25 +120,4 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
         }
     }
 
-//    private void syncDepartments(FacultyEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
-//        Set<DepartmentEntity> currentDepartments = new HashSet<>(existsEntity.getDepartments());
-//        Set<DepartmentEntity> updatedDepartmentsCopy = new HashSet<>(updatedDepartments);
-//
-//        // Находим аудитории для удаления
-//        Set<DepartmentEntity> departmentsToRemove = currentDepartments.stream()
-//                .filter(department -> !updatedDepartmentsCopy.contains(department))
-//                .collect(Collectors.toSet());
-//
-//        // Удаляем найденные аудитории
-//        for (DepartmentEntity department : departmentsToRemove) {
-//            existsEntity.removeDepartment(department);
-//        }
-//
-//        // Добавляем новые или обновляем существующие аудитории
-//        for (DepartmentEntity department : updatedDepartmentsCopy) {
-//            if (!currentDepartments.contains(department)) {
-//                existsEntity.addDepartment(department);
-//            }
-//        }
-//    }
 }

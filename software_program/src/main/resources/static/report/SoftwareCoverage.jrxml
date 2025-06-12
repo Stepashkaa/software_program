@@ -1,10 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="SoftwareCoverage" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
-    <queryString>
-        <![CDATA[]]>
-    </queryString>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="SoftwareCoverage"
+              pageWidth="595"
+              pageHeight="842"
+              columnWidth="555"
+              leftMargin="20"
+              rightMargin="20"
+              topMargin="20"
+              bottomMargin="20">
+
+    <!-- Импорты -->
+    <import value="java.util.stream.Collectors"/>
+    <import value="com.software.software_program.web.dto.entity.SoftwareDto"/>
+
+    <queryString><![CDATA[]]></queryString>
+
     <field name="classroomName" class="java.lang.String"/>
     <field name="softwareList" class="java.util.List"/>
+
     <detail>
         <band height="40">
             <textField>
@@ -21,7 +36,11 @@
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="dejavu-sans" size="12"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{softwareList}.stream().map(item -> item.getName() + " " + item.getVersion()).collect(Collectors.joining("\n"))]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                    ((java.util.List<SoftwareDto>) $F{softwareList}).stream()
+                        .map(item -> item.getName() + " " + item.getVersion())
+                        .collect(Collectors.joining("\n"))
+                ]]></textFieldExpression>
             </textField>
         </band>
     </detail>

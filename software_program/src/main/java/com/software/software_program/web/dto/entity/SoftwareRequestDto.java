@@ -38,9 +38,14 @@ public class SoftwareRequestDto {
     private String userName;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Long classroomSoftwareId;
+    private Long equipmentId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String equipmentName;
+
+    private Long softwareId;
+
     private String softwareName;
+
+    private String requestedSoftwareName;
 }

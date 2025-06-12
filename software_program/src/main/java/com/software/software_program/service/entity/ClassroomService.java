@@ -1,8 +1,7 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
-import com.software.software_program.model.entity.DepartmentEntity;
+import com.software.software_program.model.entity.EquipmentSoftwareEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.repository.ClassroomRepository;
 import com.software.software_program.core.error.NotFoundException;
@@ -78,7 +77,6 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
         existsEntity.setName(entity.getName());
         existsEntity.setCapacity(entity.getCapacity());
         existsEntity.setDepartment(entity.getDepartment());
-        syncClassroomSoftwares(existsEntity, entity.getClassroomSoftwares());
         syncEquipments(existsEntity, entity.getEquipments());
         return classroomRepository.save(existsEntity);
     }
@@ -107,25 +105,6 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
             throw new IllegalArgumentException(
                     String.format("Classroom with name %s already exists", entity.getName())
             );
-        }
-    }
-
-    private void syncClassroomSoftwares(ClassroomEntity existsEntity, Set<ClassroomSoftwareEntity> updatedClassroomSoftwares) {
-        // Находим программное обеспечение для удаления
-        Set<ClassroomSoftwareEntity> softwaresToRemove = existsEntity.getClassroomSoftwares().stream()
-                .filter(classroomSoftware -> !updatedClassroomSoftwares.contains(classroomSoftware))
-                .collect(Collectors.toSet());
-
-        // Удаляем найденные элементы
-        for (ClassroomSoftwareEntity classroomSoftware : softwaresToRemove) {
-            existsEntity.removeClassroomSoftware(classroomSoftware);
-        }
-
-        // Добавляем новые или обновляем существующие элементы
-        for (ClassroomSoftwareEntity classroomSoftware : updatedClassroomSoftwares) {
-            if (!existsEntity.getClassroomSoftwares().contains(classroomSoftware)) {
-                existsEntity.addClassroomSoftware(classroomSoftware);
-            }
         }
     }
 

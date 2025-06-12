@@ -68,4 +68,7 @@ public class UserDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> departmentNames;
+
+    private boolean emailNotificationEnabled;
+    private boolean webNotificationEnabled;
 }

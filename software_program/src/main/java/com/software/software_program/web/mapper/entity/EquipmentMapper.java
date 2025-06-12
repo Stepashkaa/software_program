@@ -7,6 +7,8 @@ import com.software.software_program.web.dto.entity.EquipmentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
 @RequiredArgsConstructor
 public class EquipmentMapper {
@@ -25,6 +27,19 @@ public class EquipmentMapper {
             dto.setClassroomId(entity.getClassroom().getId());
             dto.setClassroomName(entity.getClassroom().getName());
         }
+
+        dto.setSoftwareIds(
+                entity.getEquipmentSoftwares().stream()
+                        .map(es -> es.getSoftware().getId())
+                        .collect(Collectors.toList())
+        );
+
+        dto.setSoftwareNames(
+                entity.getEquipmentSoftwares().stream()
+                        .map(es -> es.getSoftware().getName())
+                        .collect(Collectors.toList())
+        );
+
 
         return dto;
     }

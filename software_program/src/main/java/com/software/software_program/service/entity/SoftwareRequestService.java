@@ -1,9 +1,6 @@
 package com.software.software_program.service.entity;
 
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
-import com.software.software_program.model.entity.FacultyEntity;
-import com.software.software_program.model.entity.SoftwareRequestEntity;
-import com.software.software_program.model.entity.UserEntity;
+import com.software.software_program.model.entity.*;
 import com.software.software_program.model.enums.RequestStatus;
 import com.software.software_program.repository.SoftwareRequestRepository;
 import com.software.software_program.core.error.NotFoundException;
@@ -15,8 +12,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -62,11 +61,13 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     }
 
     @Transactional
-    public SoftwareRequestEntity create(Date requestDate, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
-        SoftwareRequestEntity entity = new SoftwareRequestEntity(requestDate, RequestStatus.PENDING, description, user, classroomSoftware);
+    public SoftwareRequestEntity create(Date requestDate, String description, UserEntity user,
+                                        EquipmentEntity equipment, SoftwareEntity software, String requestedSoftwareName) {
+        SoftwareRequestEntity entity = new SoftwareRequestEntity(requestDate, RequestStatus.PENDING, description, user, equipment, software, requestedSoftwareName);
         validate(entity, null);
         return softwareRequestRepo.save(entity);
     }
+
 
     @Transactional
     public SoftwareRequestEntity update(long id, RequestStatus status, String description) {
@@ -118,22 +119,26 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
             throw new IllegalArgumentException("User must not be null");
         }
 
-        if (entity.getClassroomSoftware() == null) {
-            throw new IllegalArgumentException("ClassroomSoftware must not be null");
+        if (entity.getEquipment() == null) {
+            throw new IllegalArgumentException("Equipment must not be null");
         }
 
-
-        boolean exists = softwareRequestRepo.findByUserClassroomAndDate(
+        // Проверка на дубликат (user + equipment + requestDate)
+        boolean exists = softwareRequestRepo.findByUserEquipmentAndDate(
                 entity.getUser().getId(),
-                entity.getClassroomSoftware().getId(),
+                entity.getEquipment().getId(),
                 entity.getRequestDate()
         ).isPresent();
 
-        if (exists) {
+        if (exists && (id == null || !softwareRequestRepo.findByUserEquipmentAndDate(
+                entity.getUser().getId(),
+                entity.getEquipment().getId(),
+                entity.getRequestDate()
+        ).get().getId().equals(id))) {
             throw new IllegalArgumentException(
-                    "Software request for this user, classroom software and date already exists"
+                    "Software request for this user, equipment and date already exists"
             );
         }
-
     }
+
 }

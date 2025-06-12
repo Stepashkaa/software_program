@@ -34,4 +34,11 @@ public class NotificationEntity extends BaseEntity {
         this.user = user;
         this.isRead = isRead;
     }
+
+    @PrePersist
+    public void setSentDate() {
+        if (this.sentDate == null) {
+            this.sentDate = LocalDateTime.now();
+        }
+    }
 }

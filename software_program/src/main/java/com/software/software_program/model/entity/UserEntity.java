@@ -20,17 +20,15 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Entity
 @Table(name = "app_users")
-    public class UserEntity extends BaseEntity {
-    @Check(constraints = "length(full_name) >= 1")
+public class UserEntity extends BaseEntity {
+
     @Column(nullable = false, length = 50)
     private String fullName;
 
-    @Check(constraints = "length(email) >= 1")
     @EqualsAndHashCode.Include
     @Column(nullable = false, unique = true, columnDefinition = "text")
     private String email;
 
-    @Check(constraints = "length(phone_number) >= 1")
     @Column(name = "phone_number", nullable = false, length = 15)
     private String phoneNumber;
 
@@ -44,6 +42,12 @@ import java.util.Set;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean emailNotificationEnabled = false;
+
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean webNotificationEnabled = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NotificationEntity> notifications = new HashSet<>();
@@ -95,25 +99,15 @@ import java.util.Set;
 
     @Override
     public int hashCode() {
-        return Objects.hash(
-                id, email, password, phoneNumber, role
-        );
+        return Objects.hash(id, email);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
-
-        final UserEntity other = (UserEntity) obj;
-
-        return Objects.equals(this.id, other.id)
-                && Objects.equals(this.email, other.email)
-                && Objects.equals(this.password, other.password)
-                && Objects.equals(this.phoneNumber, other.phoneNumber)
-                && this.role == other.role;
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        UserEntity other = (UserEntity) obj;
+        return Objects.equals(this.id, other.id) && Objects.equals(this.email, other.email);
     }
 
     @PrePersist

@@ -53,13 +53,10 @@ public class DepartmentEntity extends BaseEntity {
 
     @PreRemove
     private void preRemove() {
-        // Создаем копию, чтобы избежать ConcurrentModificationException
         for (ClassroomEntity classroom : new HashSet<>(classrooms)) {
             removeClassroom(classroom);
         }
     }
-
-    // DepartmentEntity.java
     @Override
     public int hashCode() {
         return Objects.hash(id);

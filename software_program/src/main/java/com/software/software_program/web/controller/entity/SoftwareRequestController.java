@@ -49,16 +49,15 @@ public class SoftwareRequestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SoftwareRequestDto create(@RequestBody @Valid SoftwareRequestDto dto) {
-        // Преобразуем DTO в Entity
         var entity = softwareRequestMapper.toEntity(dto);
-
-        // Создаем запись через сервис
         return softwareRequestMapper.toDto(
                 softwareRequestService.create(
                         entity.getRequestDate(),
                         entity.getDescription(),
                         entity.getUser(),
-                        entity.getClassroomSoftware()
+                        entity.getEquipment(),
+                        entity.getSoftware(),
+                        entity.getRequestedSoftwareName()
                 )
         );
     }

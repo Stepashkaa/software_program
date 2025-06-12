@@ -4,6 +4,7 @@ import com.software.software_program.core.utility.Formatter;
 import com.software.software_program.model.entity.*;
 import com.software.software_program.model.report.*;
 import com.software.software_program.service.entity.*;
+import com.software.software_program.web.dto.entity.SoftwareDto;
 import com.software.software_program.web.dto.report.ReportDto;
 import lombok.RequiredArgsConstructor;
 import net.sf.jasperreports.engine.*;
@@ -77,27 +78,35 @@ public class ReportService {
     private List<SoftwareRequestInfo> getRequestsInfo(List<SoftwareRequestEntity> requests) {
         return requests.stream().map(request -> {
             SoftwareRequestInfo info = new SoftwareRequestInfo();
-            ClassroomSoftwareEntity cs = request.getClassroomSoftware();
-            ClassroomEntity classroom = cs.getClassroom();
+
+            EquipmentEntity equipment = request.getEquipment();
+            SoftwareEntity software = request.getSoftware();
+            ClassroomEntity classroom = equipment.getClassroom();
 
             info.setRequestNumber(request.getId().toString());
             info.setRequestDate(Formatter.formatToCustomString(request.getRequestDate()));
             info.setStatus(request.getStatus().toString());
             info.setDescription(request.getDescription());
 
-            info.setSoftwareName(cs.getSoftware().getName());
-            info.setSoftwareVersion(cs.getSoftware().getVersion());
-            info.setSoftwareDescription(cs.getSoftware().getDescription());
+            if (software != null) {
+                info.setSoftwareName(software.getName());
+                info.setSoftwareVersion(software.getVersion());
+                info.setSoftwareDescription(software.getDescription());
+            } else {
+                info.setSoftwareName(request.getRequestedSoftwareName() != null ? request.getRequestedSoftwareName() : "—");
+                info.setSoftwareVersion("—");
+                info.setSoftwareDescription("Не выбрано из базы");
+            }
 
             info.setClassroomName(classroom.getName());
             info.setDepartmentName(classroom.getDepartment().getName());
             info.setFacultyName(classroom.getDepartment().getFaculty().getName());
-
             info.setRequesterName(request.getUser().getFullName());
 
             return info;
         }).collect(Collectors.toList());
     }
+
 
     private List<SoftwareCoverageInfo> getCoverageInfo(List<ClassroomEntity> classrooms) {
         return classrooms.stream().map(classroom -> {
@@ -107,22 +116,20 @@ public class ReportService {
             info.setDepartmentName(classroom.getDepartment().getName());
             info.setFacultyName(classroom.getDepartment().getFaculty().getName());
 
-            List<SoftwareItem> softwareItems =
-                    classroom.getClassroomSoftwares().stream()
-                            .map(cs -> {
-                                SoftwareItem item = new SoftwareItem();  // Создаем экземпляр отдельного класса
-                                item.setName(cs.getSoftware().getName());
-                                item.setVersion(cs.getSoftware().getVersion());
-                                item.setInstallationDate(cs.getInstallationDate());
-                                return item;
-                            })
-                            .collect(Collectors.toList());
+            List<SoftwareDto> softwareList = classroom.getEquipments().stream()
+                    .flatMap(equipment -> equipment.getEquipmentSoftwares().stream())
+                    .map(es -> new SoftwareDto(
+                            es.getSoftware().getName(),
+                            es.getSoftware().getVersion(),
+                            es.getSoftware().getDescription()))
+                    .collect(Collectors.toList());
 
-            info.setSoftwareList(softwareItems);
-            info.setFullyCovered(checkCoverage(classroom));
+            info.setSoftwareList(softwareList);
+            info.setFullyCovered(!softwareList.isEmpty());
             return info;
         }).collect(Collectors.toList());
     }
+
 
     private List<SoftwareUsageInfo> getUsageInfo(List<DepartmentEntity> departments,
                                                  Date from, Date to) {
@@ -131,19 +138,19 @@ public class ReportService {
             info.setDepartmentName(department.getName());
             info.setFacultyName(department.getFaculty().getName());
 
-            List<SoftwareUsageItem> usageItems = department.getClassrooms()
-                    .stream()
-                    .flatMap(classroom -> classroom.getClassroomSoftwares().stream()
-                            .filter(cs -> !cs.getInstallationDate().before(from) &&
-                                    !cs.getInstallationDate().after(to))
-                            .map(cs -> {
-                                SoftwareUsageItem item = new SoftwareUsageItem();
-                                item.setSoftwareName(cs.getSoftware().getName());
-                                item.setVersion(cs.getSoftware().getVersion());
-                                item.setClassroomName(cs.getClassroom().getName());
-                                item.setInstallationDate(cs.getInstallationDate());
-                                return item;
-                            }))
+            List<SoftwareUsageItem> usageItems = department.getClassrooms().stream()
+                    .flatMap(classroom -> classroom.getEquipments().stream()
+                            .flatMap(equipment -> equipment.getEquipmentSoftwares().stream()
+                                    .filter(es -> !es.getInstallationDate().before(from)
+                                            && !es.getInstallationDate().after(to))
+                                    .map(es -> {
+                                        SoftwareUsageItem item = new SoftwareUsageItem();
+                                        item.setSoftwareName(es.getSoftware().getName());
+                                        item.setVersion(es.getSoftware().getVersion());
+                                        item.setClassroomName(classroom.getName());
+                                        item.setInstallationDate(es.getInstallationDate());
+                                        return item;
+                                    })))
                     .collect(Collectors.toList());
 
             info.setSoftwareList(usageItems);
@@ -153,11 +160,15 @@ public class ReportService {
         }).collect(Collectors.toList());
     }
 
+
     private boolean checkCoverage(ClassroomEntity classroom) {
-        return !classroom.getClassroomSoftwares().isEmpty();
+        return classroom.getEquipments().stream()
+                .anyMatch(equipment -> !equipment.getEquipmentSoftwares().isEmpty());
     }
+
 
     private InputStream getReportTemplateStream(String fileName) {
         return getClass().getResourceAsStream("/static/report/" + fileName);
     }
+
 }

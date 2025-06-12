@@ -1,6 +1,7 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.web.dto.entity.DepartmentDto;
 import com.software.software_program.service.entity.DepartmentService;
 import com.software.software_program.web.mapper.entity.DepartmentMapper;
@@ -67,7 +68,7 @@ public class DepartmentController {
             @RequestParam(name = "months", defaultValue = "6") int months
     ) {
         return departmentService.getSoftwareUsed(id, months).stream()
-                .map(classroomSoftware -> classroomSoftware.getSoftware().getId())
+                .map(SoftwareEntity::getId)
                 .toList();
     }
 }

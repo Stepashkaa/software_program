@@ -3,11 +3,14 @@ package com.software.software_program.web.dto.entity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
-
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 public class SoftwareDto {
@@ -28,8 +31,17 @@ public class SoftwareDto {
     private String description;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<Long> classroomSoftwareIds;
+    private List<Long> equipmentIds;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<String> classroomSoftwareNames;
+    private List<String> equipmentNames;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<Long> softwareRequestIds;
+
+    public SoftwareDto(String name, String version, String description) {
+        this.name = name;
+        this.version = version;
+        this.description = description;
+    }
 }

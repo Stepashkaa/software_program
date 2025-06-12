@@ -22,18 +22,11 @@ public interface SoftwareRepository extends JpaRepository<SoftwareEntity, Long>,
     """)
     List<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name);
 
+
     Page<SoftwareEntity> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 
-    @Query("""
-        SELECT s FROM SoftwareEntity s
-        WHERE (:name IS NULL OR LOWER(s.name) LIKE LOWER(CONCAT('%', :name, '%')))
-          AND (:version IS NULL OR LOWER(s.version) LIKE LOWER(CONCAT('%', :version, '%')))
-          AND (:description IS NULL OR LOWER(s.description) LIKE LOWER(CONCAT('%', :description, '%')))
-    """)
-    Page<SoftwareEntity> findAllByFilters(
-            @Param("name") String name,
-            @Param("version") String version,
-            @Param("description") String description,
-            Pageable pageable
-    );
+
+    List<SoftwareEntity> findByVersionContainingIgnoreCase(String version);
+
+
 }

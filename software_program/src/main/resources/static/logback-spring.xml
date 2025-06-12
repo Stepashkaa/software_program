@@ -13,7 +13,10 @@
         </rollingPolicy>
     </appender>
 
-    <root level="DEBUG">
+    <logger name="com.hardware.hardware_accounting" level="DEBUG"/>
+    <logger name="org.springframework" level="DEBUG"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <root level="INFO">
         <appender-ref ref="FILE" />
     </root>
 </configuration>

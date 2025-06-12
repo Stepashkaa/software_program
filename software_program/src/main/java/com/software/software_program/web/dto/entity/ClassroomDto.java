@@ -32,12 +32,6 @@ public class ClassroomDto {
     private String departmentName;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<Long> classroomSoftwareIds;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<String> classroomSoftwareNames;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<Long> equipmentIds;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

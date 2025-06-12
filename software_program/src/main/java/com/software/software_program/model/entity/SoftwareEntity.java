@@ -1,5 +1,6 @@
 package com.software.software_program.model.entity;
 
+import com.software.software_program.model.enums.TypeStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,38 +20,58 @@ import org.hibernate.annotations.Check;
 @Entity
 @Table(name = "software")
 public class SoftwareEntity extends BaseEntity {
-    @Check(constraints = "length(name) >= 1")
+
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Check(constraints = "length(version) >= 1")
     @Column(nullable = false, length = 20)
     private String version;
 
-    @Check(constraints = "length(description) >= 1")
     @Column(name = "description", nullable = false, unique = true, length = 100)
     private String description;
 
-    @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<ClassroomSoftwareEntity> classroomSoftwares = new HashSet<>();
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
+    private TypeStatus type = TypeStatus.FREE;
 
-    public SoftwareEntity(String name, String version, String description) {
+    @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<EquipmentSoftwareEntity> equipmentSoftwares = new HashSet<>();
+
+    @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
+
+    public SoftwareEntity(String name, String version, String description, TypeStatus type) {
         this.name = name;
         this.version = version;
         this.description = description;
+        this.type = type;
     }
 
-    public void addClassroomSoftware(ClassroomSoftwareEntity classroomSoftware) {
-        if (classroomSoftware != null) {
-            classroomSoftwares.add(classroomSoftware);
-            classroomSoftware.setSoftware(this);
+    public void addEquipmentSoftware(EquipmentSoftwareEntity equipmentSoftware) {
+        if (equipmentSoftware != null) {
+            equipmentSoftwares.add(equipmentSoftware);
+            equipmentSoftware.setSoftware(this);
         }
     }
 
-    public void removeClassroomSoftware(ClassroomSoftwareEntity classroomSoftware) {
-        if (classroomSoftware != null) {
-            classroomSoftwares.remove(classroomSoftware);
-            classroomSoftware.setSoftware(null);
+    public void removeEquipmentSoftware(EquipmentSoftwareEntity equipmentSoftware) {
+        if (equipmentSoftware != null) {
+            equipmentSoftwares.remove(equipmentSoftware);
+            equipmentSoftware.setSoftware(null);
+        }
+    }
+
+    public void addSoftwareRequest(SoftwareRequestEntity request) {
+        if (request != null) {
+            softwareRequests.add(request);
+            request.setSoftware(this);
+        }
+    }
+
+    public void removeSoftwareRequest(SoftwareRequestEntity request) {
+        if (request != null) {
+            softwareRequests.remove(request);
+            request.setSoftware(null);
         }
     }
 

@@ -22,23 +22,32 @@ public class SoftwareController {
     private final SoftwareService softwareService;
     private final SoftwareMapper softwareMapper;
 
-//    @GetMapping
-//    public Page<SoftwareDto> getAllByFilters(
-//            @RequestParam(name = "name", required = false) String name,
-//            @RequestParam(name = "version", required = false) String version,
-//            @RequestParam(name = "description", required = false) String description,
-//            Pageable pageable
-//    ) {
-//        return softwareService.getAllByFilters(name, version, description, pageable)
-//                .map(softwareMapper::toDto);
-//    }
-
     @GetMapping
     public List<SoftwareDto> getAll() {
         return softwareService.getAll(null).stream()
                 .map(softwareMapper::toDto)
                 .toList();
     }
+
+    @GetMapping("/search")
+    public List<SoftwareDto> searchByName(
+            @RequestParam(name = "name") String name
+    ) {
+        return softwareService.searchByName(name).stream()
+                .map(softwareMapper::toDto)
+                .toList();
+    }
+
+    @GetMapping("/filter")
+    public List<SoftwareDto> filterByVersion(
+            @RequestParam(name = "version") String version
+    ) {
+        return softwareService.filterByVersion(version).stream()
+                .map(softwareMapper::toDto)
+                .toList();
+    }
+
+
     @GetMapping("/all")
     public List<SoftwareDto> getAll(
             @RequestParam(name = "name", required = false) String name) {
@@ -67,10 +76,8 @@ public class SoftwareController {
     public SoftwareDto delete(@PathVariable Long id) {
         return softwareMapper.toDto(softwareService.delete(id));
     }
-    @GetMapping("/{id}/classrooms")
-    public List<Long> getClassroomsUsingSoftware(@PathVariable Long id) {
-        return softwareService.getClassroomsUsingSoftware(id).stream()
-                .map(classroomSoftware -> classroomSoftware.getClassroom().getId())
-                .toList();
+    @GetMapping("/{id}/equipments")
+    public List<Long> getEquipmentsUsingSoftware(@PathVariable Long id) {
+        return softwareService.getEquipmentsUsingSoftware(id);
     }
 }

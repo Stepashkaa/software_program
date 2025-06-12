@@ -7,8 +7,8 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
-import java.time.LocalDate;
 import java.util.Date;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -17,6 +17,7 @@ import java.util.Date;
 @Entity
 @Table(name = "software_request")
 public class SoftwareRequestEntity extends BaseEntity {
+
     @Column(nullable = false)
     private Date requestDate;
 
@@ -32,14 +33,36 @@ public class SoftwareRequestEntity extends BaseEntity {
     private UserEntity user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "classroom_software_id", nullable = false)
-    private ClassroomSoftwareEntity classroomSoftware;
+    @JoinColumn(name = "equipment_id", nullable = false)
+    private EquipmentEntity equipment;
 
-    public SoftwareRequestEntity(Date requestDate, RequestStatus status, String description, UserEntity user, ClassroomSoftwareEntity classroomSoftware) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "software_id")
+    private SoftwareEntity software;
+
+    @Column(name = "requested_software_name", length = 100)
+    private String requestedSoftwareName;
+
+    public SoftwareRequestEntity(Date requestDate, RequestStatus status, String description, UserEntity user, EquipmentEntity equipment, SoftwareEntity software, String requestedSoftwareName) {
         this.requestDate = requestDate;
         this.status = status;
         this.description = description;
         this.user = user;
-        this.classroomSoftware = classroomSoftware;
+        this.equipment = equipment;
+        this.software = software;
+        this.requestedSoftwareName = requestedSoftwareName;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        SoftwareRequestEntity other = (SoftwareRequestEntity) obj;
+        return Objects.equals(id, other.id);
     }
 }

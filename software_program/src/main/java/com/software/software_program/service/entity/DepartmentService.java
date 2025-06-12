@@ -1,10 +1,11 @@
 package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.ClassroomSoftwareEntity;
+import com.software.software_program.model.entity.EquipmentSoftwareEntity;
 import com.software.software_program.model.entity.DepartmentEntity;
 //import com.software.software_program.model.entity.ReportEntity;
-import com.software.software_program.repository.ClassroomSoftwareRepository;
+import com.software.software_program.model.entity.SoftwareEntity;
+import com.software.software_program.repository.EquipmentSoftwareRepository;
 import com.software.software_program.repository.DepartmentRepository;
 import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ import java.util.stream.StreamSupport;
 @RequiredArgsConstructor
 public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     private final DepartmentRepository repository;
-    private final ClassroomSoftwareRepository classroomSoftwareRepo;
+    private final EquipmentSoftwareRepository classroomSoftwareRepo;
 
     @Transactional(readOnly = true)
     public List<DepartmentEntity> getAll(String name) {
@@ -88,14 +89,13 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     }
 
     @Transactional(readOnly = true)
-    public List<ClassroomSoftwareEntity> getSoftwareUsed(Long departmentId, int months) {
+    public List<SoftwareEntity> getSoftwareUsed(Long departmentId, int months) {
         LocalDate end = LocalDate.now();
         LocalDate start = end.minusMonths(months);
         return classroomSoftwareRepo.findUniqueSoftwareByDepartmentAndPeriod(
                 departmentId, start, end
         );
     }
-
 
     @Override
     protected void validate(DepartmentEntity entity, Long id) {
@@ -106,7 +106,7 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         final Optional<DepartmentEntity> existingUser = repository.findByNameIgnoreCase(entity.getName());
         if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("User with email %s already exists", entity.getName())
+                    String.format("Department name %s already exists", entity.getName())
             );
         }
         if (entity.getFaculty() == null) {
@@ -139,13 +139,4 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         }
     }
 
-//    private void syncReports(DepartmentEntity existsEntity, Set<ReportEntity> updatedReports) {
-//        existsEntity.getReports().removeIf(report -> !updatedReports.contains(report));
-//
-//        for (ReportEntity report : updatedReports) {
-//            if (!existsEntity.getReports().contains(report)) {
-//                existsEntity.addReport(report);
-//            }
-//        }
-//    }
 }

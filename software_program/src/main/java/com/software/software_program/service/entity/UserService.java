@@ -4,10 +4,7 @@ import com.software.software_program.core.configuration.Constants;
 import com.software.software_program.core.error.NotFoundException;
 import com.software.software_program.core.utility.JwtUtils;
 import com.software.software_program.core.utility.ValidationUtils;
-import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.DepartmentEntity;
-import com.software.software_program.model.entity.FacultyEntity;
-import com.software.software_program.model.entity.UserEntity;
+import com.software.software_program.model.entity.*;
 import com.software.software_program.repository.UserRepository;
 import com.software.software_program.web.dto.authentication.AuthResponseDto;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,9 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -52,7 +47,10 @@ public class UserService extends AbstractEntityService<UserEntity> {
 
     public UserEntity create(UserEntity entity) {
         validate(entity, null);
-        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        entity.setPhoneNumber(normalizePhoneNumber(entity.getPhoneNumber()));
+        if (!entity.getPassword().startsWith("$2a$")) {
+            entity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        }
         return repository.save(entity);
     }
 
@@ -64,7 +62,10 @@ public class UserService extends AbstractEntityService<UserEntity> {
         existsEntity.setPassword(entity.getPassword());
         existsEntity.setPhoneNumber(entity.getPhoneNumber());
         existsEntity.setRole(entity.getRole());
+        existsEntity.setEmailNotificationEnabled(entity.isEmailNotificationEnabled());
+        existsEntity.setWebNotificationEnabled(entity.isWebNotificationEnabled());
         syncDepartments(existsEntity, entity.getDepartments());
+        syncSoftwareRequests(existsEntity, entity.getSoftwareRequests());
         return repository.save(existsEntity);
     }
 
@@ -144,23 +145,44 @@ public class UserService extends AbstractEntityService<UserEntity> {
     }
 
     private void syncDepartments(UserEntity existsEntity, Set<DepartmentEntity> updatedDepartments) {
-        // Находим кафедры для удаления
         Set<DepartmentEntity> departmentsToRemove = existsEntity.getDepartments().stream()
                 .filter(department -> !updatedDepartments.contains(department))
                 .collect(Collectors.toSet());
 
-        // Удаляем найденные кафедры
         for (DepartmentEntity department : departmentsToRemove) {
             existsEntity.removeDepartment(department);
         }
 
-        // Добавляем новые или обновляем существующие кафедры
         for (DepartmentEntity department : updatedDepartments) {
             if (!existsEntity.getDepartments().contains(department)) {
                 existsEntity.addDepartment(department);
             }
         }
     }
+
+    private void syncSoftwareRequests(UserEntity user, Set<SoftwareRequestEntity> updatedRequests) {
+        Set<SoftwareRequestEntity> currentRequests = new HashSet<>(user.getSoftwareRequests());
+
+        // Удаление старых заявок
+        Set<SoftwareRequestEntity> toRemove = currentRequests.stream()
+                .filter(existing -> updatedRequests.stream().noneMatch(updated ->
+                        Objects.equals(updated.getId(), existing.getId())))
+                .collect(Collectors.toSet());
+
+        for (SoftwareRequestEntity request : toRemove) {
+            user.removeSoftwareRequest(request);
+        }
+
+        // Добавление новых заявок
+        for (SoftwareRequestEntity updated : updatedRequests) {
+            boolean exists = currentRequests.stream().anyMatch(existing ->
+                    Objects.equals(updated.getId(), existing.getId()));
+            if (!exists) {
+                user.addSoftwareRequest(updated);
+            }
+        }
+    }
+
     public Optional<UserEntity> getByEmail(String email) {
         return repository.findByEmail(email);
     }

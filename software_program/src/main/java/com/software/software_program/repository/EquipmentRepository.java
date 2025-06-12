@@ -17,6 +17,7 @@ public interface EquipmentRepository extends JpaRepository<EquipmentEntity, Long
     Optional<EquipmentEntity> findByNameIgnoreCase(@Param("name") String name);
     List<EquipmentEntity> findByNameContainingIgnoreCase(@Param("name") String name);
     Page<EquipmentEntity> findByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
+
 //    Optional<EquipmentEntity> findBySerialNumberIgnoreCase(@Param("serialNumber") String serialNumber);
 //
 //    List<EquipmentEntity> findByClassroom(@Param("classroom") ClassroomEntity classroom);

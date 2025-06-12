@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class EquipmentDto {
@@ -31,4 +33,10 @@ public class EquipmentDto {
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String classroomName;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<Long> softwareIds;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private List<String> softwareNames;
 }
