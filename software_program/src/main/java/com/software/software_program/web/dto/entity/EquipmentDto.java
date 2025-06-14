@@ -28,7 +28,6 @@ public class EquipmentDto {
     @Size(min = 1, max = 50)
     private String serialNumber;
 
-    @NotNull
     private Long classroomId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)

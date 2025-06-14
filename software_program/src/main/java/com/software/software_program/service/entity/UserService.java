@@ -34,9 +34,11 @@ public class UserService extends AbstractEntityService<UserEntity> {
     }
 
     @Transactional(readOnly = true)
-    public Page<UserEntity> getAll(int page, int size) {
-        final Pageable pageRequest = PageRequest.of(page, size);
-        return repository.findAll(pageRequest);
+    public Page<UserEntity> getAll(String fullName, Pageable pageable) {
+        if (fullName == null || fullName.isBlank()) {
+            return repository.findAll(pageable);
+        }
+        return repository.findByFullNameContainingIgnoreCase(fullName, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -58,16 +60,28 @@ public class UserService extends AbstractEntityService<UserEntity> {
     public UserEntity update(long id, UserEntity entity) {
         validate(entity, id);
         final UserEntity existsEntity = get(id);
+
         existsEntity.setEmail(entity.getEmail());
-        existsEntity.setPassword(entity.getPassword());
         existsEntity.setPhoneNumber(entity.getPhoneNumber());
         existsEntity.setRole(entity.getRole());
         existsEntity.setEmailNotificationEnabled(entity.isEmailNotificationEnabled());
         existsEntity.setWebNotificationEnabled(entity.isWebNotificationEnabled());
+
+        // Обновляем пароль только если он не пустой
+        if (entity.getPassword() != null && !entity.getPassword().isBlank()) {
+            if (!entity.getPassword().startsWith("$2a$")) {
+                existsEntity.setPassword(passwordEncoder.encode(entity.getPassword()));
+            } else {
+                existsEntity.setPassword(entity.getPassword());
+            }
+        }
+
         syncDepartments(existsEntity, entity.getDepartments());
         syncSoftwareRequests(existsEntity, entity.getSoftwareRequests());
+
         return repository.save(existsEntity);
     }
+
 
     public UserEntity findByEmail(String email) {
         return repository.findByEmail(email).orElse(null);
@@ -76,6 +90,11 @@ public class UserService extends AbstractEntityService<UserEntity> {
     @Transactional
     public UserEntity delete(long id) {
         final UserEntity existsEntity = get(id);
+
+        for (DepartmentEntity department : existsEntity.getDepartments()) {
+            department.setHead(null);
+        }
+
         repository.delete(existsEntity);
         return existsEntity;
     }
@@ -108,12 +127,6 @@ public class UserService extends AbstractEntityService<UserEntity> {
 
         return dto;
     }
-
-//    @Transactional(readOnly = true)
-//    public UserEntity getByEmail(String email) {
-//        return repository.findByEmail(email)
-//                .orElseThrow(() -> new IllegalArgumentException("User with email " + email + " not found"));
-//    }
 
     @Override
     protected void validate(UserEntity entity, Long id) {

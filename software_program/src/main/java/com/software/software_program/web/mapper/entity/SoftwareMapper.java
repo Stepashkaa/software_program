@@ -19,6 +19,7 @@ public class SoftwareMapper {
         dto.setName(entity.getName());
         dto.setVersion(entity.getVersion());
         dto.setDescription(entity.getDescription());
+        dto.setType(entity.getType());
 
         dto.setEquipmentIds(
                 entity.getEquipmentSoftwares().stream()
@@ -47,7 +48,7 @@ public class SoftwareMapper {
         entity.setName(dto.getName());
         entity.setVersion(dto.getVersion());
         entity.setDescription(dto.getDescription());
-
+        entity.setType(dto.getType());
         entity.setEquipmentSoftwares(new HashSet<>());
 
         return entity;

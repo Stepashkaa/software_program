@@ -9,7 +9,7 @@ public class Constants {
 
     public  static final String AUTH_URL = "/auth";
 
-    public static final String DEFAULT_PAGE_SIZE = "16";
+    public static final String DEFAULT_PAGE_SIZE = "4";
 
     public static final Integer OTP_EXPIRATION_MINUTES = 10;
 

@@ -72,7 +72,11 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         } else {
             throw new IllegalArgumentException("Head of the department must not be null during update");
         }
-        syncClassrooms(existsEntity, entity.getClassrooms());
+
+        if (entity.getClassrooms() != null && !entity.getClassrooms().isEmpty()) {
+            syncClassrooms(existsEntity, entity.getClassrooms());
+        }
+
         return repository.save(existsEntity);
     }
 

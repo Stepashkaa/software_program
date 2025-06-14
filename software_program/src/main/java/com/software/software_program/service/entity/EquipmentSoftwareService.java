@@ -7,6 +7,8 @@ import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.EquipmentSoftwareRepository;
 import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,19 +29,33 @@ public class EquipmentSoftwareService extends AbstractEntityService<EquipmentSof
     @Transactional
     public EquipmentSoftwareEntity create(EquipmentSoftwareEntity entity) {
         validate(entity, null);
-        validate(entity.getEquipment(), entity.getSoftware(), entity.getInstallationDate());
+        validate(entity.getEquipment(), entity.getSoftwares(), entity.getInstallationDate());
+
         EquipmentSoftwareEntity createdEntity = equipmentSoftwareRepo.save(entity);
 
-        String message = String.format("Программное обеспечение '%s' установлено в аудитории '%s'",
-                entity.getSoftware().getName(), entity.getEquipment().getName());
+        String message = String.format(
+                "ПО [%s] установлено на оборудование '%s' (аудитория: %s)",
+                entity.getSoftwares().stream().map(SoftwareEntity::getName).toList(),
+                entity.getEquipment().getName(),
+                entity.getEquipment().getClassroom().getName()
+        );
         notificationService.sendNotificationToAll(message);
 
         return createdEntity;
     }
 
+
     @Transactional(readOnly = true)
     public List<EquipmentSoftwareEntity> getAll() {
         return equipmentSoftwareRepo.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EquipmentSoftwareEntity> getAll(String name, Pageable pageable) {
+        if (name == null || name.isBlank()) {
+            return equipmentSoftwareRepo.findAll(pageable);
+        }
+        return equipmentSoftwareRepo.findByEquipmentNameContainingIgnoreCase(name, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -49,27 +67,31 @@ public class EquipmentSoftwareService extends AbstractEntityService<EquipmentSof
     @Transactional
     public EquipmentSoftwareEntity update(long id, EquipmentSoftwareEntity entity) {
         validate(entity, id);
-        validate(entity.getEquipment(), entity.getSoftware(), entity.getInstallationDate());
+        validate(entity.getEquipment(), entity.getSoftwares(), entity.getInstallationDate());
+
         EquipmentSoftwareEntity existingEntity = get(id);
 
         existingEntity.setEquipment(entity.getEquipment());
-        existingEntity.setSoftware(entity.getSoftware());
+        existingEntity.setSoftwares(entity.getSoftwares());
         existingEntity.setInstallationDate(entity.getInstallationDate());
 
         return equipmentSoftwareRepo.save(existingEntity);
     }
 
+
     @Transactional
     public EquipmentSoftwareEntity delete(long id) {
-        EquipmentSoftwareEntity existsEntity = get(id);
+        EquipmentSoftwareEntity existsEntity = equipmentSoftwareRepo.findByIdWithAllRelations(id)
+                .orElseThrow(() -> new NotFoundException(EquipmentSoftwareEntity.class, id));
         equipmentSoftwareRepo.delete(existsEntity);
         return existsEntity;
     }
 
-    @Transactional(readOnly = true)
-    public List<EquipmentSoftwareEntity> getClassroomSoftwareReport(Long classroomId, LocalDate start, LocalDate end) {
-        return equipmentSoftwareRepo.findClassroomSoftwareReport(classroomId, start, end);
-    }
+//    @Transactional(readOnly = true)
+//    public List<SoftwareEntity> getClassroomSoftwareReport(Long classroomId, LocalDate start, LocalDate end) {
+//        return equipmentSoftwareRepo.findClassroomSoftwareReport(classroomId, start, end);
+//    }
+
 
     @Transactional(readOnly = true)
     public List<EquipmentSoftwareEntity> getDepartmentSoftwareReport(Long departmentId, LocalDate start, LocalDate end) {
@@ -85,29 +107,54 @@ public class EquipmentSoftwareService extends AbstractEntityService<EquipmentSof
         if (entity == null) {
             throw new IllegalArgumentException("EquipmentSoftware entity is null");
         }
-        validate(entity.getEquipment(), entity.getSoftware(), entity.getInstallationDate());
 
-        final Optional<EquipmentSoftwareEntity> existingEntity = equipmentSoftwareRepo.findByEquipmentAndSoftware(
-                entity.getEquipment(), entity.getSoftware()
-        );
+        if (entity.getEquipment() == null) {
+            throw new IllegalArgumentException("Оборудование не указано");
+        }
 
-        if (existingEntity.isPresent() && !existingEntity.get().getId().equals(id)) {
-            throw new IllegalArgumentException(
-                    String.format("EquipmentSoftware with equipment '%s' and software '%s' already exists",
-                            entity.getEquipment().getName(), entity.getSoftware().getName())
-            );
+        if (entity.getSoftwares() == null || entity.getSoftwares().isEmpty()) {
+            throw new IllegalArgumentException("Список ПО не должен быть пустым");
+        }
+
+        if (entity.getInstallationDate() == null || entity.getInstallationDate().after(new Date())) {
+            throw new IllegalArgumentException("Дата установки не должна быть null или в будущем");
+        }
+
+        // Проверка на точный дубликат: оборудование + набор ПО + дата
+        List<EquipmentSoftwareEntity> allForEquipment = equipmentSoftwareRepo.findByEquipment(entity.getEquipment());
+
+        Set<Long> newSoftwareIds = entity.getSoftwares().stream()
+                .map(SoftwareEntity::getId)
+                .collect(Collectors.toSet());
+
+        for (EquipmentSoftwareEntity existing : allForEquipment) {
+            Set<Long> existingSoftwareIds = existing.getSoftwares().stream()
+                    .map(SoftwareEntity::getId)
+                    .collect(Collectors.toSet());
+
+            boolean sameDate = existing.getInstallationDate().equals(entity.getInstallationDate());
+
+            if (existingSoftwareIds.equals(newSoftwareIds) && sameDate) {
+                if (id == null || !existing.getId().equals(id)) {
+                    throw new IllegalArgumentException(String.format(
+                            "Уже существует запись с этим оборудованием, выбранным набором ПО и датой установки (ID: %d)",
+                            existing.getId()
+                    ));
+                }
+            }
         }
     }
 
-    private void validate(EquipmentEntity equipment, SoftwareEntity software, Date installationDate) {
+    private void validate(EquipmentEntity equipment, Set<SoftwareEntity> softwares, Date installationDate) {
         if (equipment == null) {
-            throw new IllegalArgumentException("Classroom must not be null");
+            throw new IllegalArgumentException("Оборудование не указано");
         }
-        if (software == null) {
-            throw new IllegalArgumentException("Software must not be null");
+        if (softwares == null || softwares.isEmpty()) {
+            throw new IllegalArgumentException("Список ПО не должен быть пустым");
         }
-        if (installationDate == null || installationDate.after(new Date())){
-            throw new IllegalArgumentException("Installation date must not be null or in the future");
+        if (installationDate == null || installationDate.after(new Date())) {
+            throw new IllegalArgumentException("Дата установки не должна быть null или в будущем");
         }
     }
+
 }

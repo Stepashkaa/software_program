@@ -30,7 +30,7 @@ public class ClassroomEntity extends BaseEntity {
     @JoinColumn(name = "department_id")
     private DepartmentEntity department;
 
-    @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "classroom")
     private Set<EquipmentEntity> equipments = new HashSet<>();
 
     public ClassroomEntity(String name, Integer capacity, DepartmentEntity department) {
@@ -64,5 +64,12 @@ public class ClassroomEntity extends BaseEntity {
         if (o == null || getClass() != o.getClass()) return false;
         ClassroomEntity that = (ClassroomEntity) o;
         return Objects.equals(id, that.id);
+    }
+
+    @PreRemove
+    private void preRemove() {
+        for (EquipmentEntity equipment : equipments) {
+            equipment.setClassroom(null);
+        }
     }
 }

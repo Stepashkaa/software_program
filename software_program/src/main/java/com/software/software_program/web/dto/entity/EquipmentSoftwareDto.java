@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Getter
 @Setter
 public class EquipmentSoftwareDto {
@@ -14,20 +16,23 @@ public class EquipmentSoftwareDto {
     private Long id;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @JsonProperty(access = JsonProperty.Access.READ_WRITE)
     private Long equipmentId;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String equipmentName;
 
     @NotNull
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private Long softwareId;
+    @JsonProperty(access = JsonProperty.Access.READ_WRITE)
+    private List<Long> softwareIds;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String softwareName;
+    private List<String> softwareNames;
 
     @NotNull
     @IsoDate
     private String installationDate;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String serialNumber;
 }

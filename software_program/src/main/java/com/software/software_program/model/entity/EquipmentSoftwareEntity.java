@@ -9,7 +9,9 @@ import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.NaturalId;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -23,31 +25,42 @@ public class EquipmentSoftwareEntity extends BaseEntity {
     @JoinColumn(name = "equipment_id", nullable = false)
     private EquipmentEntity equipment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "software_id", nullable = false)
-    private SoftwareEntity software;
+    @ManyToMany
+    @JoinTable(
+            name = "equipment_software_mapping",
+            joinColumns = @JoinColumn(name = "equipment_software_id"),
+            inverseJoinColumns = @JoinColumn(name = "software_id")
+    )
+    private Set<SoftwareEntity> softwares = new HashSet<>();
 
     @Column(nullable = false)
     private Date installationDate;
 
-    public EquipmentSoftwareEntity(EquipmentEntity equipment, SoftwareEntity software, Date installationDate) {
+    public EquipmentSoftwareEntity(EquipmentEntity equipment, Set<SoftwareEntity> softwares, Date installationDate) {
         this.equipment = equipment;
-        this.software = software;
+        this.softwares = softwares;
         this.installationDate = installationDate;
+    }
+
+    public void addSoftware(SoftwareEntity software) {
+        softwares.add(software);
+    }
+
+    public void removeSoftware(SoftwareEntity software) {
+        softwares.remove(software);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Используем только id
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof EquipmentSoftwareEntity)) return false;
-        EquipmentSoftwareEntity that = (EquipmentSoftwareEntity) o;
-        return Objects.equals(equipment, that.equipment) &&
-                Objects.equals(software, that.software);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(equipment, software);
+        if (o == null || getClass() != o.getClass()) return false;
+        EquipmentEntity that = (EquipmentEntity) o;
+        return Objects.equals(id, that.id);
     }
 
 }

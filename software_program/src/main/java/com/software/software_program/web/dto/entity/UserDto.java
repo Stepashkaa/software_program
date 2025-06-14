@@ -37,7 +37,6 @@ public class UserDto {
     )
     private String phoneNumber;
 
-    @NotBlank
     @Pattern(
             regexp = Constants.PASSWORD_PATTERN,
             message = "Password must be 8-60 characters, include at least one uppercase letter, one lowercase letter, one digit, and one special character (!@#$%^&*()-_+=;:,./?\\|`~[]{})."
@@ -69,6 +68,9 @@ public class UserDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> departmentNames;
 
+    @NotNull
     private boolean emailNotificationEnabled;
+
+    @NotNull
     private boolean webNotificationEnabled;
 }

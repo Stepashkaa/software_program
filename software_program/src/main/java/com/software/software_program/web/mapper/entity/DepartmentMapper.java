@@ -33,12 +33,15 @@ public class DepartmentMapper {
             Hibernate.initialize(entity.getFaculty());
             dto.setFacultyId(entity.getFaculty().getId());
             dto.setFacultyName(entity.getFaculty().getName());
+        } else {
+            dto.setFacultyName("Нет факультета");
         }
 
-        // Инициализация заведующего
         if (entity.getHead() != null) {
             dto.setHeadId(entity.getHead().getId());
             dto.setHeadName(entity.getHead().getFullName());
+        } else {
+            dto.setHeadName("Нет заведующего");
         }
 
         dto.setClassroomIds(

@@ -118,10 +118,13 @@ public class ReportService {
 
             List<SoftwareDto> softwareList = classroom.getEquipments().stream()
                     .flatMap(equipment -> equipment.getEquipmentSoftwares().stream())
-                    .map(es -> new SoftwareDto(
-                            es.getSoftware().getName(),
-                            es.getSoftware().getVersion(),
-                            es.getSoftware().getDescription()))
+                    .flatMap(es -> es.getSoftwares().stream())
+                    .map(software -> new SoftwareDto(
+                            software.getName(),
+                            software.getVersion(),
+                            software.getDescription(),
+                            software.getType()))
+                    .distinct()
                     .collect(Collectors.toList());
 
             info.setSoftwareList(softwareList);
@@ -129,6 +132,7 @@ public class ReportService {
             return info;
         }).collect(Collectors.toList());
     }
+
 
 
     private List<SoftwareUsageInfo> getUsageInfo(List<DepartmentEntity> departments,
@@ -143,14 +147,17 @@ public class ReportService {
                             .flatMap(equipment -> equipment.getEquipmentSoftwares().stream()
                                     .filter(es -> !es.getInstallationDate().before(from)
                                             && !es.getInstallationDate().after(to))
-                                    .map(es -> {
-                                        SoftwareUsageItem item = new SoftwareUsageItem();
-                                        item.setSoftwareName(es.getSoftware().getName());
-                                        item.setVersion(es.getSoftware().getVersion());
-                                        item.setClassroomName(classroom.getName());
-                                        item.setInstallationDate(es.getInstallationDate());
-                                        return item;
-                                    })))
+                                    .flatMap(es -> es.getSoftwares().stream()
+                                            .map(software -> {
+                                                SoftwareUsageItem item = new SoftwareUsageItem();
+                                                item.setSoftwareName(software.getName());
+                                                item.setVersion(software.getVersion());
+                                                item.setClassroomName(classroom.getName());
+                                                item.setInstallationDate(es.getInstallationDate());
+                                                return item;
+                                            }))
+                            )
+                    )
                     .collect(Collectors.toList());
 
             info.setSoftwareList(usageItems);
@@ -159,6 +166,7 @@ public class ReportService {
             return info;
         }).collect(Collectors.toList());
     }
+
 
 
     private boolean checkCoverage(ClassroomEntity classroom) {

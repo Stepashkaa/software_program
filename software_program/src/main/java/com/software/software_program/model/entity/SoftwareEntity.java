@@ -27,14 +27,14 @@ public class SoftwareEntity extends BaseEntity {
     @Column(nullable = false, length = 20)
     private String version;
 
-    @Column(name = "description", nullable = false, unique = true, length = 100)
+    @Column(name = "description", nullable = false, length = 100)
     private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20, columnDefinition = "varchar(20) default 'FREE'")
     private TypeStatus type = TypeStatus.FREE;
 
-    @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(mappedBy = "softwares")
     private Set<EquipmentSoftwareEntity> equipmentSoftwares = new HashSet<>();
 
     @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -45,20 +45,6 @@ public class SoftwareEntity extends BaseEntity {
         this.version = version;
         this.description = description;
         this.type = type;
-    }
-
-    public void addEquipmentSoftware(EquipmentSoftwareEntity equipmentSoftware) {
-        if (equipmentSoftware != null) {
-            equipmentSoftwares.add(equipmentSoftware);
-            equipmentSoftware.setSoftware(this);
-        }
-    }
-
-    public void removeEquipmentSoftware(EquipmentSoftwareEntity equipmentSoftware) {
-        if (equipmentSoftware != null) {
-            equipmentSoftwares.remove(equipmentSoftware);
-            equipmentSoftware.setSoftware(null);
-        }
     }
 
     public void addSoftwareRequest(SoftwareRequestEntity request) {

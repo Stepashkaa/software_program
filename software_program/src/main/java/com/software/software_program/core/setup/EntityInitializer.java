@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
@@ -149,8 +150,28 @@ public class EntityInitializer {
 
     @Loggable
     private void associateEquipmentSoftware(List<EquipmentEntity> equipments, List<SoftwareEntity> softwares) {
-        equipmentSoftwareService.create(new EquipmentSoftwareEntity(equipments.get(0), softwares.get(0), new Date()));
-        equipmentSoftwareService.create(new EquipmentSoftwareEntity(equipments.get(1), softwares.get(1), new Date()));
+        // Например: на проектор — Office и AutoCAD
+        equipmentSoftwareService.create(new EquipmentSoftwareEntity(
+                equipments.get(0),
+                Set.of(softwares.get(0), softwares.get(2)), // Microsoft Office, AutoCAD
+                new Date()
+        ));
+
+        // На компьютер — IntelliJ IDEA и AutoCAD
+        equipmentSoftwareService.create(new EquipmentSoftwareEntity(
+                equipments.get(1),
+                Set.of(softwares.get(1), softwares.get(2)), // IntelliJ IDEA, AutoCAD
+                new Date()
+        ));
+
+        // На интерактивную доску — только Microsoft Office
+        equipmentSoftwareService.create(new EquipmentSoftwareEntity(
+                equipments.get(2),
+                Set.of(softwares.get(0)), // Microsoft Office
+                new Date()
+        ));
+
+        logger.info("Программное обеспечение успешно привязано к оборудованию.");
     }
 
     private List<UserEntity> createUsers() {

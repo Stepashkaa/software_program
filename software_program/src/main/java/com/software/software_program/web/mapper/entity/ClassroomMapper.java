@@ -25,6 +25,8 @@ public class ClassroomMapper {
         if (entity.getDepartment() != null) {
             dto.setDepartmentId(entity.getDepartment().getId());
             dto.setDepartmentName(entity.getDepartment().getName());
+        } else {
+            dto.setDepartmentName("Нет кафедры");
         }
 
         dto.setEquipmentIds(

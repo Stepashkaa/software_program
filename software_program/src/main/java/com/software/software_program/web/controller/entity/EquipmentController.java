@@ -1,6 +1,8 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.model.entity.ClassroomEntity;
+import com.software.software_program.model.entity.EquipmentEntity;
 import com.software.software_program.web.dto.entity.DepartmentDto;
 import com.software.software_program.web.dto.entity.EquipmentDto;
 import com.software.software_program.service.entity.EquipmentService;
@@ -25,13 +27,16 @@ public class EquipmentController {
     private final EquipmentService equipmentService;
     private final EquipmentMapper equipmentMapper;
     @GetMapping("/paged")
-    public Page<EquipmentDto> getAll(
-            @RequestParam(name = "name", required = false) String name,
-            Pageable pageable
+    public PageDto<EquipmentDto> getPagedEquipment(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = Constants.DEFAULT_PAGE_SIZE) int size,
+            @RequestParam(required = false) String name
     ) {
-        return equipmentService.getAll(name, pageable)
-                .map(equipmentMapper::toDto);
+        Pageable pageable = PageRequest.of(page, size);
+        Page<EquipmentEntity> entityPage = equipmentService.getAll(name, pageable);
+        return PageDtoMapper.toDto(entityPage, equipmentMapper::toDto);
     }
+
     @GetMapping
     public List<EquipmentDto> getAll(@RequestParam(name = "name", defaultValue = "") String name) {
         return equipmentService.getAll(name).stream()

@@ -28,5 +28,12 @@ public interface SoftwareRepository extends JpaRepository<SoftwareEntity, Long>,
 
     List<SoftwareEntity> findByVersionContainingIgnoreCase(String version);
 
+    @Query("""
+      SELECT s FROM SoftwareEntity s
+      LEFT JOIN FETCH s.equipmentSoftwares es
+      LEFT JOIN FETCH es.equipment
+      WHERE s.id = :id
+    """)
+    Optional<SoftwareEntity> findByIdWithRelations(@Param("id") Long id);
 
 }

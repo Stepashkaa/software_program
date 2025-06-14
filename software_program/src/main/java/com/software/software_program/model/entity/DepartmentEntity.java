@@ -25,15 +25,15 @@ public class DepartmentEntity extends BaseEntity {
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "faculty_id", nullable = false)
+    @JoinColumn(name = "faculty_id", nullable = true)
     private FacultyEntity faculty;
 
-    @OneToMany(mappedBy = "department", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "department")
     @OrderBy("id ASC")
     private Set<ClassroomEntity> classrooms = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_id", nullable = false)
+    @JoinColumn(name = "head_id", nullable = true)
     private UserEntity head;
     public DepartmentEntity(String name, FacultyEntity faculty, UserEntity head) {
         this.name = name;
@@ -50,13 +50,6 @@ public class DepartmentEntity extends BaseEntity {
         this.classrooms.remove(classroom);
         classroom.setDepartment(null);
     }
-
-    @PreRemove
-    private void preRemove() {
-        for (ClassroomEntity classroom : new HashSet<>(classrooms)) {
-            removeClassroom(classroom);
-        }
-    }
     @Override
     public int hashCode() {
         return Objects.hash(id);
@@ -69,4 +62,12 @@ public class DepartmentEntity extends BaseEntity {
         DepartmentEntity other = (DepartmentEntity) obj;
         return Objects.equals(this.getId(), other.getId());
     }
+
+    @PreRemove
+    private void preRemove() {
+        for (ClassroomEntity classroom : new HashSet<>(classrooms)) {
+            classroom.setDepartment(null);
+        }
+    }
+
 }

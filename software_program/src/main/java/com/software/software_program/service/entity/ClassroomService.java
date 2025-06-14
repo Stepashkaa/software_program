@@ -3,6 +3,7 @@ package com.software.software_program.service.entity;
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.EquipmentSoftwareEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
+import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.repository.ClassroomRepository;
 import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,15 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
 
     private final ClassroomRepository classroomRepository;
 
-    @Transactional(readOnly = true)
-    public Page<ClassroomEntity> getAllByFilters(
-            String name,
-            Integer capacity,
-            Long departmentId,
-            Pageable pageable
-    ) {
-        return classroomRepository.findAllByFilters(name, capacity, departmentId, pageable);
-    }
+//    @Transactional(readOnly = true)
+//    public Page<ClassroomEntity> getAllByFilters(
+//            String name,
+//            Integer capacity,
+//            Long departmentId,
+//            Pageable pageable
+//    ) {
+//        return classroomRepository.findAllByFilters(name, capacity, departmentId, pageable);
+//    }
 
     @Transactional(readOnly = true)
     public List<ClassroomEntity> getAll(String name) {
@@ -44,12 +45,11 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     @Transactional(readOnly = true)
-    public Page<ClassroomEntity> getAll(String name, int page, int size) {
-        final Pageable pageRequest = PageRequest.of(page, size);
+    public Page<ClassroomEntity> getAll(String name, Pageable pageable) {
         if (name == null || name.isBlank()) {
-            return classroomRepository.findAll(pageRequest);
+            return classroomRepository.findAll(pageable);
         }
-        return classroomRepository.findByNameContainingIgnoreCase(name, pageRequest);
+        return classroomRepository.findByNameContainingIgnoreCase(name, pageable);
     }
 
     @Transactional(readOnly = true)

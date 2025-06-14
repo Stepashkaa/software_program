@@ -1,12 +1,16 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.model.entity.FacultyEntity;
 import com.software.software_program.web.dto.entity.FacultyDto;
+import com.software.software_program.web.dto.pagination.PageDto;
 import com.software.software_program.service.entity.FacultyService;
 import com.software.software_program.web.mapper.entity.FacultyMapper;
+import com.software.software_program.web.mapper.pagination.PageDtoMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +30,18 @@ public class FacultyController {
                 .map(facultyMapper::toDto)
                 .toList();
     }
+
+    @GetMapping("/paged")
+    public PageDto<FacultyDto> getPagedFaculties(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = Constants.DEFAULT_PAGE_SIZE) int size,
+            @RequestParam(required = false) String name
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<FacultyEntity> entityPage = facultyService.getAll(name, pageable);
+        return PageDtoMapper.toDto(entityPage, facultyMapper::toDto);
+    }
+
     @GetMapping("/{id}")
     public FacultyDto get(@PathVariable Long id) {
         return facultyMapper.toDto(facultyService.get(id));

@@ -125,25 +125,26 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     private void syncEquipmentSoftwares(EquipmentEntity equipment, Set<EquipmentSoftwareEntity> updatedSoftwares) {
         Set<EquipmentSoftwareEntity> currentSoftwares = new HashSet<>(equipment.getEquipmentSoftwares());
 
-        // Удаление ПО, которое было исключено
+        // Удаление устаревших связей
         Set<EquipmentSoftwareEntity> toRemove = currentSoftwares.stream()
                 .filter(existing -> updatedSoftwares.stream().noneMatch(updated ->
-                        updated.getSoftware().getId().equals(existing.getSoftware().getId())))
+                        existing.getSoftwares().equals(updated.getSoftwares())))
                 .collect(Collectors.toSet());
 
         for (EquipmentSoftwareEntity es : toRemove) {
-            equipment.removeSoftware(es); // метод removeSoftware уже у тебя есть
+            equipment.removeSoftware(es);
         }
 
-        // Добавление нового ПО
+        // Добавление новых связей
         for (EquipmentSoftwareEntity updated : updatedSoftwares) {
             boolean exists = currentSoftwares.stream().anyMatch(existing ->
-                    existing.getSoftware().getId().equals(updated.getSoftware().getId()));
+                    existing.getSoftwares().equals(updated.getSoftwares()));
             if (!exists) {
-                equipment.addSoftware(updated); // метод addSoftware у тебя тоже уже есть
+                equipment.addSoftware(updated);
             }
         }
     }
+
 
     private void syncRequests(EquipmentEntity equipment, Set<SoftwareRequestEntity> updatedRequests) {
         Set<SoftwareRequestEntity> currentRequests = new HashSet<>(equipment.getSoftwareRequests());

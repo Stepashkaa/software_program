@@ -55,7 +55,7 @@ public class UserEntity extends BaseEntity {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
 
-    @OneToMany(mappedBy = "head", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "head", fetch = FetchType.LAZY)
     @OrderBy("id ASC")
     private Set<DepartmentEntity> departments = new HashSet<>();
 
@@ -99,15 +99,15 @@ public class UserEntity extends BaseEntity {
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, email);
+        return Objects.hash(id); // Используем только id
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        UserEntity other = (UserEntity) obj;
-        return Objects.equals(this.id, other.id) && Objects.equals(this.email, other.email);
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserEntity that = (UserEntity) o;
+        return Objects.equals(id, that.id);
     }
 
     @PrePersist
