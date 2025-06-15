@@ -2,10 +2,7 @@ package com.software.software_program.core.utility;
 
 import lombok.experimental.UtilityClass;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Date;
@@ -33,10 +30,16 @@ public final class Formatter {
 
     public static Date parse(String date) {
         try {
-            Instant instant = Instant.parse(date);
-            return Date.from(instant);
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format: " + date);
+            // Пробуем ISO INSTANT
+            return Date.from(Instant.parse(date));
+        } catch (DateTimeParseException e1) {
+            try {
+                // Пробуем yyyy-MM-dd
+                LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+            } catch (DateTimeParseException e2) {
+                throw new IllegalArgumentException("Invalid date format: " + date);
+            }
         }
     }
 

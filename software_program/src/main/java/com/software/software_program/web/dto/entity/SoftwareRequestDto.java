@@ -20,17 +20,15 @@ public class SoftwareRequestDto {
     private Long id;
 
     @NotNull
-    @IsoDate
-    private String requestDate;
+    private String  requestDate;
 
-    @NotNull
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private RequestStatus status;
 
     @NotBlank
     @Size(max = 500)
     private String description;
 
-    @NotNull
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private Long userId;
 

@@ -53,6 +53,11 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     }
 
     @Transactional(readOnly = true)
+    public List<ClassroomEntity> getAll() {
+        return StreamSupport.stream(classroomRepository.findAll().spliterator(), false).toList();
+    }
+
+    @Transactional(readOnly = true)
     public ClassroomEntity get(long id) {
         return classroomRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(ClassroomEntity.class, id));

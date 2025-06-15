@@ -1,6 +1,7 @@
 package com.software.software_program.web.controller.entity;
 
 import com.software.software_program.core.configuration.Constants;
+import com.software.software_program.service.entity.UserService;
 import com.software.software_program.web.dto.entity.SoftwareRequestDto;
 import com.software.software_program.model.enums.RequestStatus;
 import com.software.software_program.service.entity.SoftwareRequestService;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class SoftwareRequestController {
 
     private final SoftwareRequestService softwareRequestService;
     private final SoftwareRequestMapper softwareRequestMapper;
+    private final UserService userService;
 
     @GetMapping
     public Page<SoftwareRequestDto> getAllByFilters(
@@ -48,8 +51,15 @@ public class SoftwareRequestController {
     }
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public SoftwareRequestDto create(@RequestBody @Valid SoftwareRequestDto dto) {
+    public SoftwareRequestDto create(@RequestBody @Valid SoftwareRequestDto dto, Principal principal) {
+        // Получаем ID текущего пользователя
+        Long currentUserId = userService.getUserIdFromPrincipal(principal);
+
+        dto.setUserId(currentUserId);                     // Устанавливаем пользователя
+        dto.setStatus(RequestStatus.PENDING);             // Принудительно статус "Ожидает"
+
         var entity = softwareRequestMapper.toEntity(dto);
+
         return softwareRequestMapper.toDto(
                 softwareRequestService.create(
                         entity.getRequestDate(),
@@ -61,6 +71,8 @@ public class SoftwareRequestController {
                 )
         );
     }
+
+
     @PutMapping("/{id}")
     public SoftwareRequestDto update(
             @PathVariable Long id,

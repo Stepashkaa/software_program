@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -80,6 +81,12 @@ public class UserService extends AbstractEntityService<UserEntity> {
         syncSoftwareRequests(existsEntity, entity.getSoftwareRequests());
 
         return repository.save(existsEntity);
+    }
+
+    public Long getUserIdFromPrincipal(Principal principal) {
+        UserEntity user = repository.findByEmail(principal.getName())
+                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return user.getId();
     }
 
 

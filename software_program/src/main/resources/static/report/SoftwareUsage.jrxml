@@ -9,54 +9,113 @@
               leftMargin="20"
               rightMargin="20"
               topMargin="20"
-              bottomMargin="20">
+              bottomMargin="20"
+              whenNoDataType="AllSectionsNoDetail">
 
     <!-- Импорты -->
     <import value="java.util.stream.Collectors"/>
-    <import value="com.software.software_program.web.dto.entity.SoftwareDto"/>
+    <import value="com.software.software_program.model.report.SoftwareUsageItem"/>
 
     <parameter name="periodFrom" class="java.lang.String"/>
     <parameter name="periodTo" class="java.lang.String"/>
 
     <queryString><![CDATA[]]></queryString>
 
+    <!-- Поля -->
     <field name="departmentName" class="java.lang.String"/>
+    <field name="facultyName" class="java.lang.String"/>
+    <field name="classroomNames" class="java.util.List"/>
     <field name="softwareList" class="java.util.List"/>
 
+    <!-- Заголовок -->
+    <title>
+        <band height="40">
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="16" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Используемое программное обеспечение по кафедрам]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <!-- Подзаголовок с периодом -->
     <pageHeader>
-        <band height="30">
+        <band height="20">
             <textField>
                 <reportElement x="0" y="0" width="555" height="20"/>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
+                <textElement textAlignment="Center">
                     <font fontName="dejavu-sans" size="12"/>
                 </textElement>
-                <textFieldExpression><![CDATA["Период: " + $P{periodFrom} + " - " + $P{periodTo}]]></textFieldExpression>
+                <textFieldExpression><![CDATA[
+                        "Период: " + $P{periodFrom}.substring(0, 10).replace("-", ".")
+                                  + " — " + $P{periodTo}.substring(0, 10).replace("-", ".")
+                    ]]></textFieldExpression>
             </textField>
         </band>
     </pageHeader>
 
+    <!-- Детали -->
     <detail>
-        <band height="40">
+        <band height="140">
+
+            <!-- Кафедра -->
             <textField>
-                <reportElement x="0" y="0" width="555" height="20"/>
+                <reportElement x="0" y="0" width="555" height="18"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font fontName="dejavu-sans" size="14" isBold="true"/>
+                    <font fontName="dejavu-sans" size="13" isBold="true"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{departmentName}]]></textFieldExpression>
+                <textFieldExpression><![CDATA["Кафедра: " + $F{departmentName}]]></textFieldExpression>
             </textField>
-        </band>
-        <band height="20">
+
+            <!-- Факультет -->
             <textField>
-                <reportElement x="0" y="0" width="555" height="20"/>
+                <reportElement x="0" y="20" width="555" height="16"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Факультет: " + $F{facultyName}]]></textFieldExpression>
+            </textField>
+
+            <!-- Аудитории -->
+            <textField isStretchWithOverflow="true">
+                <reportElement x="0" y="38" width="555" height="16"/>
+                <textElement>
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[
+                    "Аудитории: " +
+                    ((java.util.List<String>) $F{classroomNames})
+                        .stream()
+                        .collect(Collectors.joining(", "))
+                ]]></textFieldExpression>
+            </textField>
+
+            <!-- ПО -->
+            <textField isStretchWithOverflow="true">
+                <reportElement x="0" y="58" width="555" height="65"/>
+                <textElement textAlignment="Left" verticalAlignment="Top">
                     <font fontName="dejavu-sans" size="12"/>
                 </textElement>
                 <textFieldExpression><![CDATA[
                     ((java.util.List) $F{softwareList}).stream()
-                        .map(item -> ((SoftwareDto) item).getName() + " " + ((SoftwareDto) item).getVersion())
+                        .map(item -> {
+                            SoftwareUsageItem s = (SoftwareUsageItem) item;
+                            return "• " + s.getSoftwareName() + " " + s.getVersion()
+                                   + " — аудитория: " + s.getClassroomName()
+                                   + ", установлено: " + new java.text.SimpleDateFormat("dd.MM.yyyy").format(s.getInstallationDate());
+                        })
                         .collect(Collectors.joining("\n"))
                 ]]></textFieldExpression>
             </textField>
+
+            <!-- Разделительная линия -->
+            <line>
+                <reportElement x="0" y="130" width="555" height="1"/>
+            </line>
+
         </band>
     </detail>
+
 </jasperReport>

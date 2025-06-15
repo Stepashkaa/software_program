@@ -47,8 +47,12 @@ public class SecurityConfiguration {
                                 "/api/auth/**", // оставить
                                 "/api/auth/refresh-token" // явно разрешить доступ к refresh-token
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/auth/logout").permitAll()
+                        .requestMatchers("/api/admin/report/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/api/admin/department").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/api/admin/software-request/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 );
 

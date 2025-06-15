@@ -9,6 +9,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SoftwareCoverageInfo {
+    private Long classroomId;
     private String classroomName;
     private Integer classroomCapacity;
     private String departmentName;

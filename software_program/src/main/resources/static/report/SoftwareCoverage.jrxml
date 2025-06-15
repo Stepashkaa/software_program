@@ -9,7 +9,8 @@
               leftMargin="20"
               rightMargin="20"
               topMargin="20"
-              bottomMargin="20">
+              bottomMargin="20"
+              whenNoDataType="AllSectionsNoDetail">
 
     <!-- Импорты -->
     <import value="java.util.stream.Collectors"/>
@@ -17,31 +18,98 @@
 
     <queryString><![CDATA[]]></queryString>
 
+    <!-- Поля -->
     <field name="classroomName" class="java.lang.String"/>
+    <field name="classroomCapacity" class="java.lang.Integer"/>
+    <field name="departmentName" class="java.lang.String"/>
+    <field name="facultyName" class="java.lang.String"/>
     <field name="softwareList" class="java.util.List"/>
+    <field name="fullyCovered" class="java.lang.Boolean"/>
 
-    <detail>
+    <!-- Заголовок -->
+    <title>
         <band height="40">
-            <textField>
-                <reportElement x="0" y="0" width="555" height="20"/>
-                <textElement textAlignment="Left" verticalAlignment="Middle">
-                    <font fontName="dejavu-sans" size="14" isBold="true"/>
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="30"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="16" isBold="true"/>
                 </textElement>
-                <textFieldExpression><![CDATA[$F{classroomName}]]></textFieldExpression>
-            </textField>
+                <text><![CDATA[Обеспеченность аудиторий программным обеспечением]]></text>
+            </staticText>
         </band>
-        <band height="20">
+    </title>
+
+    <!-- Основной блок -->
+    <detail>
+        <band height="130">
+
+            <!-- Аудитория -->
             <textField>
-                <reportElement x="0" y="0" width="555" height="20"/>
+                <reportElement x="0" y="0" width="555" height="18"/>
                 <textElement textAlignment="Left" verticalAlignment="Middle">
                     <font fontName="dejavu-sans" size="12"/>
                 </textElement>
+                <textFieldExpression><![CDATA["Аудитория: " + $F{classroomName}]]></textFieldExpression>
+            </textField>
+
+            <!-- Вместимость -->
+            <textField>
+                <reportElement x="0" y="18" width="555" height="16"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Вместимость: " + $F{classroomCapacity}]]></textFieldExpression>
+            </textField>
+
+            <!-- Кафедра -->
+            <textField>
+                <reportElement x="0" y="34" width="555" height="16"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Кафедра: " + $F{departmentName}]]></textFieldExpression>
+            </textField>
+
+            <!-- Факультет -->
+            <textField>
+                <reportElement x="0" y="50" width="555" height="16"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Факультет: " + $F{facultyName}]]></textFieldExpression>
+            </textField>
+
+            <!-- ПО -->
+            <textField isStretchWithOverflow="true">
+                <reportElement x="0" y="68" width="555" height="20"/>
+                <textElement textAlignment="Left" verticalAlignment="Top">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
                 <textFieldExpression><![CDATA[
-                    ((java.util.List<SoftwareDto>) $F{softwareList}).stream()
-                        .map(item -> item.getName() + " " + item.getVersion())
-                        .collect(Collectors.joining("\n"))
+                    "ПО: " +
+                    ((java.util.List<SoftwareDto>) $F{softwareList})
+                        .stream()
+                        .map(s -> s.getName() + " " + s.getVersion())
+                        .distinct()
+                        .collect(Collectors.joining(", "))
                 ]]></textFieldExpression>
             </textField>
+
+            <!-- Обеспеченность -->
+            <textField>
+                <reportElement x="0" y="90" width="555" height="16"/>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Обеспечена ПО: " + ($F{fullyCovered} ? "Да" : "Нет")]]></textFieldExpression>
+            </textField>
+
+            <!-- Разделительная линия -->
+            <line>
+                <reportElement x="0" y="110" width="555" height="1"/>
+            </line>
+
         </band>
     </detail>
+
 </jasperReport>

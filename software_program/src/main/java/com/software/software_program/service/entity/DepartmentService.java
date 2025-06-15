@@ -35,6 +35,13 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         }
         return repository.findByNameContainingIgnoreCase(name);
     }
+    @Transactional(readOnly = true)
+    public List<DepartmentEntity> getAll() {
+        return StreamSupport
+                .stream(repository.findAll().spliterator(), false)
+                .collect(Collectors.toList());
+    }
+
 
     @Transactional(readOnly = true)
     public Page<DepartmentEntity> getAll(String name, Pageable pageable) {
