@@ -2,6 +2,7 @@ package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.EquipmentSoftwareEntity;
 import com.software.software_program.model.entity.EquipmentEntity;
+import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.model.entity.SoftwareRequestEntity;
 import com.software.software_program.repository.EquipmentRepository;
 import com.software.software_program.core.error.NotFoundException;
@@ -23,6 +24,7 @@ import java.util.stream.StreamSupport;
 public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
 
     private final EquipmentRepository equipmentRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<EquipmentEntity> getAll(String name) {
@@ -49,7 +51,16 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     @Transactional
     public EquipmentEntity create(EquipmentEntity entity) {
         validate(entity, null);
-        return equipmentRepository.save(entity);
+        EquipmentEntity createdEntity = equipmentRepository.save(entity);
+
+        // Отправка уведомлений о добавлении нового оборудования
+        String message = String.format(
+                "Добавлено новое аборудование: %s",
+                createdEntity.getName()
+        );
+        notificationService.sendNotificationToAll(message);
+
+        return createdEntity;
     }
 
     @Transactional
@@ -63,7 +74,6 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
         existsEntity.setClassroom(entity.getClassroom());
 
         syncEquipmentSoftwares(existsEntity, entity.getEquipmentSoftwares());
-        syncRequests(existsEntity, entity.getSoftwareRequests());
 
         return equipmentRepository.save(existsEntity);
     }
@@ -141,26 +151,6 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
                     existing.getSoftwares().equals(updated.getSoftwares()));
             if (!exists) {
                 equipment.addSoftware(updated);
-            }
-        }
-    }
-
-
-    private void syncRequests(EquipmentEntity equipment, Set<SoftwareRequestEntity> updatedRequests) {
-        Set<SoftwareRequestEntity> currentRequests = new HashSet<>(equipment.getSoftwareRequests());
-
-        Set<SoftwareRequestEntity> toRemove = currentRequests.stream()
-                .filter(req -> updatedRequests.stream().noneMatch(u -> u.getId().equals(req.getId())))
-                .collect(Collectors.toSet());
-
-        for (SoftwareRequestEntity request : toRemove) {
-            equipment.removeSoftwareRequest(request);
-        }
-
-        for (SoftwareRequestEntity request : updatedRequests) {
-            boolean exists = currentRequests.stream().anyMatch(existing -> existing.getId().equals(request.getId()));
-            if (!exists) {
-                equipment.addSoftwareRequest(request);
             }
         }
     }

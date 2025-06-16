@@ -25,16 +25,7 @@ import java.util.stream.StreamSupport;
 public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
 
     private final ClassroomRepository classroomRepository;
-
-//    @Transactional(readOnly = true)
-//    public Page<ClassroomEntity> getAllByFilters(
-//            String name,
-//            Integer capacity,
-//            Long departmentId,
-//            Pageable pageable
-//    ) {
-//        return classroomRepository.findAllByFilters(name, capacity, departmentId, pageable);
-//    }
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<ClassroomEntity> getAll(String name) {
@@ -72,8 +63,17 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     @Transactional
     public ClassroomEntity create(ClassroomEntity entity) {
         validate(entity, null);
-        return classroomRepository.save(entity);
+        ClassroomEntity createdEntity = classroomRepository.save(entity);
+        // Отправка уведомлений о добавлении новой аудитории
+        String message = String.format(
+                "Добавлена новая аудитория: %s",
+                createdEntity.getName()
+        );
+        notificationService.sendNotificationToAll(message);
+
+        return createdEntity;
     }
+
 
     @Transactional
     public ClassroomEntity update(long id, ClassroomEntity entity) {

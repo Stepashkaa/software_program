@@ -37,6 +37,10 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
         return softwareRepository.findByNameContainingIgnoreCase(name);
     }
 
+    public List<SoftwareEntity> getAll() {
+        return softwareRepository.findAll(); // или аналогичный метод
+    }
+
     @Transactional(readOnly = true)
     public Page<SoftwareEntity> getAll(String name, Pageable pageable) {
         if (name == null || name.isBlank()) {
@@ -83,9 +87,6 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
         existsEntity.setVersion(entity.getVersion());
         existsEntity.setDescription(entity.getDescription());
         existsEntity.setType(entity.getType());
-
-//        syncEquipmentSoftwares(existsEntity, entity.getEquipmentSoftwares());
-        syncSoftwareRequests(existsEntity, entity.getSoftwareRequests());
 
         return softwareRepository.save(existsEntity);
     }
@@ -147,48 +148,5 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
                 .map(es -> es.getEquipment().getId())
                 .toList();
     }
-
-    private void syncSoftwareRequests(SoftwareEntity software, Set<SoftwareRequestEntity> updatedRequests) {
-        Set<SoftwareRequestEntity> currentRequests = new HashSet<>(software.getSoftwareRequests());
-
-        Set<SoftwareRequestEntity> toRemove = currentRequests.stream()
-                .filter(req -> updatedRequests.stream().noneMatch(u -> u.getId().equals(req.getId())))
-                .collect(Collectors.toSet());
-
-        for (SoftwareRequestEntity request : toRemove) {
-            software.removeSoftwareRequest(request);
-        }
-
-        for (SoftwareRequestEntity request : updatedRequests) {
-            boolean exists = currentRequests.stream().anyMatch(existing -> existing.getId().equals(request.getId()));
-            if (!exists) {
-                software.addSoftwareRequest(request);
-            }
-        }
-    }
-
-//    private void syncEquipmentSoftwares(SoftwareEntity software, Set<EquipmentSoftwareEntity> updatedSoftwares) {
-//        Set<EquipmentSoftwareEntity> currentSoftwares = new HashSet<>(software.getEquipmentSoftwares());
-//
-//        // Удаление старых
-//        Set<EquipmentSoftwareEntity> toRemove = currentSoftwares.stream()
-//                .filter(existing -> updatedSoftwares.stream().noneMatch(updated ->
-//                        updated.getEquipment().getId().equals(existing.getEquipment().getId())))
-//                .collect(Collectors.toSet());
-//
-//        for (EquipmentSoftwareEntity es : toRemove) {
-//            software.removeEquipmentSoftware(es);
-//        }
-//
-//        // Добавление новых
-//        for (EquipmentSoftwareEntity updated : updatedSoftwares) {
-//            boolean exists = currentSoftwares.stream().anyMatch(existing ->
-//                    existing.getEquipment().getId().equals(updated.getEquipment().getId()));
-//            if (!exists) {
-//                software.addEquipmentSoftware(updated);
-//            }
-//        }
-//    }
-
 
 }

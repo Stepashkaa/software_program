@@ -2,6 +2,7 @@ package com.software.software_program.core.setup;
 
 import com.software.software_program.core.configuration.AppConfigurationProperties;
 import com.software.software_program.model.entity.*;
+import com.software.software_program.model.enums.RequestStatus;
 import com.software.software_program.model.enums.TypeStatus;
 import com.software.software_program.model.enums.UserRole;
 import com.software.software_program.service.entity.*;
@@ -60,8 +61,13 @@ public class EntityInitializer {
 
         associateEquipmentSoftware(equipments, softwares);
 
+
+
+
         List<UserEntity> users = createUsers();
         if (users.isEmpty()) logger.warn("No users created.");
+
+        createSoftwareRequests(users, equipments, softwares);
 
         logger.info("Database initialization completed.");
     }
@@ -173,6 +179,45 @@ public class EntityInitializer {
 
         logger.info("Программное обеспечение успешно привязано к оборудованию.");
     }
+
+    @Loggable
+    private void createSoftwareRequests(List<UserEntity> users, List<EquipmentEntity> equipments, List<SoftwareEntity> softwares) {
+        if (softwareRequestService.getAll(null, null).isEmpty()) {
+            SoftwareRequestEntity request = new SoftwareRequestEntity();
+            request.setRequestDate(new Date());
+            request.setDescription("Автоматически созданная тестовая заявка");
+            request.setUser(users.get(0)); // Первый созданный пользователь (например, админ)
+            request.setStatus(RequestStatus.PENDING); // можно не указывать — выставляется по умолчанию
+
+            List<SoftwareRequestItemEntity> items = new ArrayList<>();
+
+            items.add(createRequestItem("Компьютер", "PC67890", "IntelliJ IDEA", "IDE для Java", "GPL", "Да"));
+            items.add(createRequestItem("Компьютер", "PC67890", "IntelliJ2 IDEA2", "IDE для Java2", "GPL", "Нет"));
+            items.add(createRequestItem("Компьютер2", "PC67899", "IntelliJ3 IDEA3", "IDE для Java3", "GPL", "Нет"));
+
+            for (SoftwareRequestItemEntity item : items) {
+                item.setRequest(request); // установить обратную связь
+            }
+
+            request.setRequestItems(items);
+
+            softwareRequestService.create(request);
+            logger.info("Тестовая заявка создана автоматически.");
+        }
+    }
+
+    private SoftwareRequestItemEntity createRequestItem(String equipmentName, String serialNumber, String softwareName,
+                                                        String softwareDescription, String softwareType, String availability) {
+        SoftwareRequestItemEntity item = new SoftwareRequestItemEntity();
+        item.setEquipmentName(equipmentName);
+        item.setSerialNumber(serialNumber);
+        item.setSoftwareName(softwareName);
+        item.setSoftwareDescription(softwareDescription);
+        item.setSoftwareType(softwareType);
+        return item;
+    }
+
+
 
     private List<UserEntity> createUsers() {
         List<UserEntity> users = new ArrayList<>();

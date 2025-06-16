@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
@@ -32,25 +33,14 @@ public class SoftwareRequestEntity extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "equipment_id", nullable = false)
-    private EquipmentEntity equipment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "software_id")
-    private SoftwareEntity software;
-
-    @Column(name = "requested_software_name", length = 100)
-    private String requestedSoftwareName;
-
-    public SoftwareRequestEntity(Date requestDate, RequestStatus status, String description, UserEntity user, EquipmentEntity equipment, SoftwareEntity software, String requestedSoftwareName) {
+    @OneToMany(mappedBy = "softwareRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SoftwareRequestItemEntity> requestItems;
+    public SoftwareRequestEntity(Date requestDate, RequestStatus status, String description, UserEntity user, List<SoftwareRequestItemEntity> requestItems) {
         this.requestDate = requestDate;
         this.status = status;
         this.description = description;
         this.user = user;
-        this.equipment = equipment;
-        this.software = software;
-        this.requestedSoftwareName = requestedSoftwareName;
+        this.requestItems = requestItems;
     }
 
     @Override

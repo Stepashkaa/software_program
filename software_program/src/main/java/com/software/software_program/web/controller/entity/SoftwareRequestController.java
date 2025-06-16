@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -30,10 +31,9 @@ public class SoftwareRequestController {
     public Page<SoftwareRequestDto> getAllByFilters(
             @RequestParam(name = "status", required = false) RequestStatus status,
             @RequestParam(name = "userId", required = false) Long userId,
-            @RequestParam(name = "classroomSoftwareId", required = false) Long classroomSoftwareId,
             Pageable pageable
     ) {
-        return softwareRequestService.getAllByFilters(status, userId, classroomSoftwareId, pageable)
+        return softwareRequestService.getAllByFilters(status, userId, pageable)
                 .map(softwareRequestMapper::toDto);
     }
     @GetMapping("/all")
@@ -52,37 +52,31 @@ public class SoftwareRequestController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public SoftwareRequestDto create(@RequestBody @Valid SoftwareRequestDto dto, Principal principal) {
-        // Получаем ID текущего пользователя
         Long currentUserId = userService.getUserIdFromPrincipal(principal);
-
-        dto.setUserId(currentUserId);                     // Устанавливаем пользователя
-        dto.setStatus(RequestStatus.PENDING);             // Принудительно статус "Ожидает"
+        dto.setUserId(currentUserId);
+        dto.setStatus(RequestStatus.PENDING);
 
         var entity = softwareRequestMapper.toEntity(dto);
-
-        return softwareRequestMapper.toDto(
-                softwareRequestService.create(
-                        entity.getRequestDate(),
-                        entity.getDescription(),
-                        entity.getUser(),
-                        entity.getEquipment(),
-                        entity.getSoftware(),
-                        entity.getRequestedSoftwareName()
-                )
-        );
+        return softwareRequestMapper.toDto(softwareRequestService.create(entity));
     }
 
+    @GetMapping("/statuses")
+    public List<String> getStatuses() {
+        return Arrays.stream(RequestStatus.values())
+                .map(Enum::name)
+                .toList();
+    }
 
     @PutMapping("/{id}")
     public SoftwareRequestDto update(
             @PathVariable Long id,
-            @RequestParam(required = false) RequestStatus status,
-            @RequestParam(required = false) String description
+            @RequestBody SoftwareRequestDto dto
     ) {
         return softwareRequestMapper.toDto(
-                softwareRequestService.update(id, status, description)
+                softwareRequestService.update(id, dto.getStatus(), dto.getDescription())
         );
     }
+
     @DeleteMapping("/{id}")
     public SoftwareRequestDto delete(@PathVariable Long id) {
         return softwareRequestMapper.toDto(softwareRequestService.delete(id));

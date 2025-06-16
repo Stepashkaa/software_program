@@ -32,12 +32,6 @@ public class SoftwareMapper {
                         .collect(Collectors.toList())
         );
 
-        dto.setSoftwareRequestIds(
-                entity.getSoftwareRequests().stream()
-                        .map(SoftwareRequestEntity::getId)
-                        .collect(Collectors.toList())
-        );
-
         return dto;
     }
 

@@ -1,10 +1,7 @@
 package com.software.software_program.service.entity;
 
-import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.EquipmentSoftwareEntity;
-import com.software.software_program.model.entity.DepartmentEntity;
+import com.software.software_program.model.entity.*;
 //import com.software.software_program.model.entity.ReportEntity;
-import com.software.software_program.model.entity.SoftwareEntity;
 import com.software.software_program.repository.EquipmentSoftwareRepository;
 import com.software.software_program.repository.DepartmentRepository;
 import com.software.software_program.core.error.NotFoundException;
@@ -27,6 +24,7 @@ import java.util.stream.StreamSupport;
 public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     private final DepartmentRepository repository;
     private final EquipmentSoftwareRepository classroomSoftwareRepo;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<DepartmentEntity> getAll(String name) {
@@ -65,7 +63,16 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
     @Transactional
     public DepartmentEntity create(DepartmentEntity entity) {
         validate(entity, null);
-        return repository.save(entity);
+        DepartmentEntity createdEntity = repository.save(entity);
+
+        // Отправка уведомлений о добавлении новой кафедры
+        String message = String.format(
+                "Добавлена новая кафедра: %s",
+                createdEntity.getName()
+        );
+        notificationService.sendNotificationToAll(message);
+
+        return createdEntity;
     }
 
     @Transactional

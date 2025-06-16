@@ -22,12 +22,12 @@ public class NotificationService {
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
     }
 
-    @Transactional
-    public NotificationEntity sendNotification(String message, UserEntity user) {
-        validate(message, user);
-        NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
-        return notificationRepository.save(entity);
-    }
+//    @Transactional
+//    public NotificationEntity sendNotification(String message, UserEntity user) {
+//        validate(message, user);
+//        NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
+//        return notificationRepository.save(entity);
+//    }
 
     @Transactional
     public List<NotificationEntity> sendNotificationToAll(String message) {
@@ -40,6 +40,18 @@ public class NotificationService {
                 })
                 .toList();
     }
+
+    @Transactional
+    public NotificationEntity sendNotification(String message, UserEntity user) {
+        validate(message, user);
+        // если веб-уведомления отключены — не сохраняем
+        if (!user.isWebNotificationEnabled()) {
+            return null;
+        }
+        NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
+        return notificationRepository.save(entity);
+    }
+
 
     @Transactional(readOnly = true)
     public List<NotificationEntity> getUserNotifications(Long userId, Boolean isRead) {

@@ -24,15 +24,15 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     private final SoftwareRequestRepository softwareRequestRepo;
     private final UserRepository userRequestRepo;
     private final NotificationService notificationService;
+    private final EquipmentService equipmentService;
 
     @Transactional(readOnly = true)
     public Page<SoftwareRequestEntity> getAllByFilters(
             RequestStatus status,
             Long userId,
-            Long classroomSoftwareId,
             Pageable pageable
     ) {
-        return softwareRequestRepo.findAllByFilters(status, userId, classroomSoftwareId, pageable);
+        return softwareRequestRepo.findAllByFilters(status, userId, pageable);
     }
 
     @Transactional(readOnly = true)
@@ -61,12 +61,22 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
     }
 
     @Transactional
-    public SoftwareRequestEntity create(Date requestDate, String description, UserEntity user,
-                                        EquipmentEntity equipment, SoftwareEntity software, String requestedSoftwareName) {
-        SoftwareRequestEntity entity = new SoftwareRequestEntity(requestDate, RequestStatus.PENDING, description, user, equipment, software, requestedSoftwareName);
+    public SoftwareRequestEntity create(SoftwareRequestEntity entity) {
+        entity.setStatus(RequestStatus.PENDING);
         validate(entity, null);
-        return softwareRequestRepo.save(entity);
+        for (SoftwareRequestItemEntity item : entity.getRequestItems()) {
+            item.setSoftwareRequest(entity);
+        }
+        SoftwareRequestEntity saved = softwareRequestRepo.save(entity);
+
+        notificationService.sendNotification(
+                "Ваша заявка №" + saved.getId() + " успешно создана и ожидает обработки.",
+                saved.getUser()
+        );
+
+        return saved;
     }
+
 
 
     @Transactional
@@ -92,6 +102,19 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
             existsEntity.setDescription(description);
         }
 
+        SoftwareRequestEntity exists = get(id);
+        if (status != null) {
+            exists.setStatus(status);
+            SoftwareRequestEntity updated = softwareRequestRepo.save(exists);
+
+            // уведомляем пользователя о смене статуса
+            notificationService.sendNotification(
+                    "Статус вашей заявки №" + id + " изменён на «" + status + "».",
+                    updated.getUser()
+            );
+            return updated;
+        }
+
         validate(existsEntity, id);
         return softwareRequestRepo.save(existsEntity);
     }
@@ -105,40 +128,31 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
 
     @Override
     protected void validate(SoftwareRequestEntity entity, Long id) {
-        if (entity == null) {
-            throw new IllegalArgumentException("SoftwareRequest entity is null");
-        }
+        if (entity == null) throw new IllegalArgumentException("Entity is null");
 
         if (entity.getRequestDate() == null || entity.getRequestDate().after(new Date())) {
-            throw new IllegalArgumentException("Request date must not be null or in the future");
+            throw new IllegalArgumentException("Invalid request date");
         }
 
         validateStringField(entity.getDescription(), "Description");
 
         if (entity.getUser() == null) {
-            throw new IllegalArgumentException("User must not be null");
+            throw new IllegalArgumentException("User is required");
         }
 
-        if (entity.getEquipment() == null) {
-            throw new IllegalArgumentException("Equipment must not be null");
+        if (entity.getRequestItems() == null || entity.getRequestItems().isEmpty()) {
+            throw new IllegalArgumentException("Request must contain at least one equipment+software item");
         }
 
-        // Проверка на дубликат (user + equipment + requestDate)
-        boolean exists = softwareRequestRepo.findByUserEquipmentAndDate(
-                entity.getUser().getId(),
-                entity.getEquipment().getId(),
-                entity.getRequestDate()
-        ).isPresent();
-
-        if (exists && (id == null || !softwareRequestRepo.findByUserEquipmentAndDate(
-                entity.getUser().getId(),
-                entity.getEquipment().getId(),
-                entity.getRequestDate()
-        ).get().getId().equals(id))) {
-            throw new IllegalArgumentException(
-                    "Software request for this user, equipment and date already exists"
-            );
+        for (SoftwareRequestItemEntity item : entity.getRequestItems()) {
+            if (item.getEquipmentName() == null || item.getEquipmentName().isBlank()) {
+                throw new IllegalArgumentException("Equipment name is required in each item");
+            }
+            if (item.getSoftwareName() == null || item.getSoftwareName().isBlank()) {
+                throw new IllegalArgumentException("Software name is required in each item");
+            }
         }
     }
+
 
 }

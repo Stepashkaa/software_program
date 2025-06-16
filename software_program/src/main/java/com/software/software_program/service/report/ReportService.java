@@ -36,12 +36,16 @@ public class ReportService {
         List<SoftwareRequestInfo> requestsInfo = getRequestsInfo(
                 requestService.getByIds(reportDto.getRequestIds()));
 
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(requestsInfo);
         Map<String, Object> params = new HashMap<>();
         if (ignorePagination) {
             params.put(JRParameter.IS_IGNORE_PAGINATION, true);
         }
-        return JasperFillManager.fillReport(jasperReport, params, dataSource);
+
+        return JasperFillManager.fillReport(
+                jasperReport,
+                params,
+                new JRBeanCollectionDataSource(requestsInfo)  // <-- вот он, основной источник!
+        );
     }
 
     public JasperPrint generateSoftwareCoverageReport(ReportDto reportDto, boolean ignorePagination) throws JRException {
@@ -90,36 +94,33 @@ public class ReportService {
     }
 
     private List<SoftwareRequestInfo> getRequestsInfo(List<SoftwareRequestEntity> requests) {
-        return requests.stream().map(request -> {
-            SoftwareRequestInfo info = new SoftwareRequestInfo();
+        List<SoftwareEntity> allSoftware = softwareService.getAll();
 
-            EquipmentEntity equipment = request.getEquipment();
-            SoftwareEntity software = request.getSoftware();
-            ClassroomEntity classroom = equipment.getClassroom();
+        return requests.stream()
+                .flatMap(request -> request.getRequestItems().stream().map(item -> {
+                    SoftwareRequestInfo info = new SoftwareRequestInfo();
 
-            info.setRequestNumber(request.getId().toString());
-            info.setRequestDate(Formatter.formatToCustomString(request.getRequestDate()));
-            info.setStatus(request.getStatus().toString());
-            info.setDescription(request.getDescription());
+                    // Оборудование
+                    info.setSerialNumber(item.getSerialNumber());              // Инв. номер
+                    info.setEquipmentName(item.getEquipmentName());       // Описание ПК
 
-            if (software != null) {
-                info.setSoftwareName(software.getName());
-                info.setSoftwareVersion(software.getVersion());
-                info.setSoftwareDescription(software.getDescription());
-            } else {
-                info.setSoftwareName(request.getRequestedSoftwareName() != null ? request.getRequestedSoftwareName() : "—");
-                info.setSoftwareVersion("—");
-                info.setSoftwareDescription("Не выбрано из базы");
-            }
+                    // ПО
+                    info.setSoftwareName(item.getSoftwareName());               // Название ПО
+                    info.setSoftwareDescription(item.getSoftwareDescription()); // Описание ПО
+                    info.setSoftwareType(item.getSoftwareType());               // Тип ПО
 
-            info.setClassroomName(classroom.getName());
-            info.setDepartmentName(classroom.getDepartment().getName());
-            info.setFacultyName(classroom.getDepartment().getFaculty().getName());
-            info.setRequesterName(request.getUser().getFullName());
+                    // Наличие ПО (по совпадению имени и описания в базе)
+                    boolean exists = allSoftware.stream().anyMatch(software ->
+                            software.getName().equalsIgnoreCase(item.getSoftwareName()) &&
+                                    software.getDescription().equalsIgnoreCase(item.getSoftwareDescription())
+                    );
+                    info.setAvailability(exists ? "+" : "–");
 
-            return info;
-        }).collect(Collectors.toList());
+                    return info;
+                }))
+                .collect(Collectors.toList());
     }
+
 
 
     public List<SoftwareCoverageInfo> getCoverageInfo(List<ClassroomEntity> classrooms) {

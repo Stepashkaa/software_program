@@ -37,9 +37,6 @@ public class EquipmentEntity extends BaseEntity {
     @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<EquipmentSoftwareEntity> equipmentSoftwares = new HashSet<>();
 
-    @OneToMany(mappedBy = "equipment", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
-
     public EquipmentEntity(String name, String type, String serialNumber, ClassroomEntity classroom) {
         this.name = name;
         this.type = type;
@@ -58,20 +55,6 @@ public class EquipmentEntity extends BaseEntity {
         if (software != null) {
             equipmentSoftwares.remove(software);
             software.setEquipment(null);
-        }
-    }
-
-    public void addSoftwareRequest(SoftwareRequestEntity request) {
-        if (request != null) {
-            softwareRequests.add(request);
-            request.setEquipment(this);
-        }
-    }
-
-    public void removeSoftwareRequest(SoftwareRequestEntity request) {
-        if (request != null) {
-            softwareRequests.remove(request);
-            request.setEquipment(null);
         }
     }
 

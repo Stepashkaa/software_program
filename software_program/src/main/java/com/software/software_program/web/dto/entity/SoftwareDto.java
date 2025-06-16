@@ -37,9 +37,6 @@ public class SoftwareDto {
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private List<String> equipmentNames;
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private List<Long> softwareRequestIds;
-
     private TypeStatus type;
 
     public SoftwareDto(String name, String version, String description, TypeStatus type) {

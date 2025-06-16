@@ -37,28 +37,11 @@ public class SoftwareEntity extends BaseEntity {
     @ManyToMany(mappedBy = "softwares")
     private Set<EquipmentSoftwareEntity> equipmentSoftwares = new HashSet<>();
 
-    @OneToMany(mappedBy = "software", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<SoftwareRequestEntity> softwareRequests = new HashSet<>();
-
     public SoftwareEntity(String name, String version, String description, TypeStatus type) {
         this.name = name;
         this.version = version;
         this.description = description;
         this.type = type;
-    }
-
-    public void addSoftwareRequest(SoftwareRequestEntity request) {
-        if (request != null) {
-            softwareRequests.add(request);
-            request.setSoftware(this);
-        }
-    }
-
-    public void removeSoftwareRequest(SoftwareRequestEntity request) {
-        if (request != null) {
-            softwareRequests.remove(request);
-            request.setSoftware(null);
-        }
     }
 
     @Override

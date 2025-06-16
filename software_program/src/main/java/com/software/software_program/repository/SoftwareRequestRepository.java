@@ -33,22 +33,20 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
         SELECT sr FROM SoftwareRequestEntity sr
         WHERE (:status IS NULL OR sr.status = :status)
           AND (:userId IS NULL OR sr.user.id = :userId)
-          AND (:equipmentId IS NULL OR sr.equipment.id = :equipmentId)
     """)
     Page<SoftwareRequestEntity> findAllByFilters(
             @Param("status") RequestStatus status,
             @Param("userId") Long userId,
-            @Param("equipmentId") Long equipmentId,
             Pageable pageable
     );
 
-    @Query("SELECT sr FROM SoftwareRequestEntity sr WHERE " +
-            "sr.user.id = :userId AND " +
-            "sr.equipment.id = :equipmentId AND " +
-            "sr.requestDate = :requestDate")
-    Optional<SoftwareRequestEntity> findByUserEquipmentAndDate(
-            @Param("userId") Long userId,
-            @Param("equipmentId") Long equipmentId,
-            @Param("requestDate") Date requestDate
-    );
+//    @Query("SELECT sr FROM SoftwareRequestEntity sr WHERE " +
+//            "sr.user.id = :userId AND " +
+//            "sr.equipment.id = :equipmentId AND " +
+//            "sr.requestDate = :requestDate")
+//    Optional<SoftwareRequestEntity> findByUserEquipmentAndDate(
+//            @Param("userId") Long userId,
+//            @Param("equipmentId") Long equipmentId,
+//            @Param("requestDate") Date requestDate
+//    );
 }

@@ -42,14 +42,6 @@ public class MapperConfiguration {
         // SoftwareRequestEntity -> SoftwareRequestDto
         modelMapper.typeMap(SoftwareRequestEntity.class, SoftwareRequestDto.class).addMappings(mapper -> {
             mapper.map(src -> src.getUser().getFullName(), SoftwareRequestDto::setUserName);
-            mapper.map(src -> src.getEquipment().getName(), SoftwareRequestDto::setEquipmentName);
-            mapper.map(src -> {
-                if (src.getSoftware() != null) {
-                    return src.getSoftware().getName();
-                } else {
-                    return src.getRequestedSoftwareName();
-                }
-            }, SoftwareRequestDto::setSoftwareName);
         });
 
         return modelMapper;

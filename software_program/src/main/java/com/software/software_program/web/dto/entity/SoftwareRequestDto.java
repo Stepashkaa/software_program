@@ -11,6 +11,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -22,7 +23,6 @@ public class SoftwareRequestDto {
     @NotNull
     private String  requestDate;
 
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private RequestStatus status;
 
     @NotBlank
@@ -36,14 +36,5 @@ public class SoftwareRequestDto {
     private String userName;
 
     @NotNull
-    private Long equipmentId;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private String equipmentName;
-
-    private Long softwareId;
-
-    private String softwareName;
-
-    private String requestedSoftwareName;
+    private List<SoftwareRequestItemDto> requestItems;
 }

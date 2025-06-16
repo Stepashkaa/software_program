@@ -1,9 +1,6 @@
 package com.software.software_program.service.entity;
 
-import com.software.software_program.model.entity.ClassroomEntity;
-import com.software.software_program.model.entity.DepartmentEntity;
-import com.software.software_program.model.entity.EquipmentEntity;
-import com.software.software_program.model.entity.FacultyEntity;
+import com.software.software_program.model.entity.*;
 import com.software.software_program.repository.FacultyRepository;
 import com.software.software_program.core.error.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +21,7 @@ import java.util.stream.StreamSupport;
 public class FacultyService extends AbstractEntityService<FacultyEntity> {
 
     private final FacultyRepository facultyRepository;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public List<FacultyEntity> getAll(String name) {
@@ -50,8 +48,18 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     @Transactional
     public FacultyEntity create(FacultyEntity entity) {
         validate(entity, null);
-        return facultyRepository.save(entity);
+        FacultyEntity createdEntity = facultyRepository.save(entity);
+
+        // Отправка уведомлений о добавлении нового факультета
+        String message = String.format(
+                "Добавлен новый факультет: %s",
+                createdEntity.getName()
+        );
+        notificationService.sendNotificationToAll(message);
+
+        return createdEntity;
     }
+
 
     @Transactional
     public FacultyEntity update(long id, FacultyEntity entity) {
@@ -88,10 +96,10 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
         }
         validateStringField(entity.getName(), "Faculty name");
 
-        final Optional<FacultyEntity> existingUser = facultyRepository.findByNameIgnoreCase(entity.getName());
-        if (existingUser.isPresent() && !existingUser.get().getId().equals(id)) {
+        Optional<FacultyEntity> existing = facultyRepository.findByNameIgnoreCase(entity.getName());
+        if (existing.isPresent() && !existing.get().getId().equals(id)) {
             throw new IllegalArgumentException(
-                    String.format("Faculty name%s already exists", entity.getName())
+                    String.format("Faculty name '%s' already exists", entity.getName())
             );
         }
     }
