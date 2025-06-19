@@ -19,27 +19,6 @@ import java.util.Optional;
 @Repository
 public interface EquipmentSoftwareRepository extends JpaRepository<EquipmentSoftwareEntity, Long> {
 
-    /**
-     * Отчет по программному обеспечению, установленному в конкретной аудитории за период
-     */
-//    @Query("""
-//        SELECT DISTINCT s FROM EquipmentSoftwareEntity es
-//        JOIN es.softwares s
-//        JOIN es.equipment eq
-//        JOIN eq.classroom c
-//        WHERE c.id = :classroomId
-//          AND es.installationDate BETWEEN :start AND :end
-//        ORDER BY s.name
-//    """)
-//    List<SoftwareEntity> findClassroomSoftwareReport(
-//            @Param("classroomId") Long classroomId,
-//            @Param("start") LocalDate start,
-//            @Param("end") LocalDate end
-//    );
-
-    /**
-     * Отчет по программному обеспечению, установленному на кафедре (через аудитории и оборудование) за период
-     */
     @Query("""
         SELECT DISTINCT es FROM EquipmentSoftwareEntity es
         JOIN FETCH es.softwares s
@@ -56,9 +35,6 @@ public interface EquipmentSoftwareRepository extends JpaRepository<EquipmentSoft
             @Param("end") LocalDate end
     );
 
-    /**
-     * Уникальное ПО, использовавшееся на кафедре за период (без повторений)
-     */
     @Query("""
         SELECT DISTINCT s FROM EquipmentSoftwareEntity es
         JOIN es.softwares s
@@ -75,10 +51,6 @@ public interface EquipmentSoftwareRepository extends JpaRepository<EquipmentSoft
             @Param("end") LocalDate end
     );
 
-
-    /**
-     * Поиск записи по конкретному оборудованию и ПО
-     */
     Optional<EquipmentSoftwareEntity> findByEquipmentAndSoftwaresContaining(
             EquipmentEntity equipment,
             SoftwareEntity software

@@ -31,7 +31,6 @@ public class EquipmentMapper {
             dto.setClassroomName("Нет аудитории");
         }
 
-        // Собираем все уникальные SoftwareEntity из всех EquipmentSoftwareEntity
         var softwares = entity.getEquipmentSoftwares().stream()
                 .flatMap(es -> es.getSoftwares().stream())
                 .collect(Collectors.toSet());
@@ -64,7 +63,6 @@ public class EquipmentMapper {
             entity.setClassroom(classroom);
         }
 
-        // Привязка ПО будет происходить отдельно через EquipmentSoftwareService
         return entity;
     }
 }

@@ -13,8 +13,6 @@ public class Constants {
 
     public static final Integer OTP_EXPIRATION_MINUTES = 10;
 
-    public static final String OTP_EMAIL_SUBJECT = "Двухфакторная аутентификация: запрос на вход в Ваш аккаунт";
-
     public static final String PHONE_PATTERN = "^((8|\\+374|\\+994|\\+995|\\+375|\\+7|\\+380|\\+38|\\+996|\\+998|\\+993)[\\- ]?)?\\(?\\d{3,5}\\)?[\\- ]?\\d{1}[\\- ]?\\d{1}[\\- ]?\\d{1}[\\- ]?\\d{1}[\\- ]?\\d{1}(([\\- ]?\\d{1})?[\\- ]?\\d{1})?$";
 
     public static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*_=+\\\\-]).{8,60}$";

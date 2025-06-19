@@ -22,7 +22,7 @@ public class NotificationEntity extends BaseEntity {
     private LocalDateTime sentDate;
 
     @Column(name = "is_read", nullable = false)
-    private boolean isRead; // Альтернативный вариант
+    private boolean isRead;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)

@@ -64,16 +64,13 @@ public class DepartmentMapper {
     public DepartmentEntity toEntity(DepartmentDto dto) {
         DepartmentEntity entity = new DepartmentEntity();
 
-        // Базовые поля
         entity.setId(dto.getId());
         entity.setName(dto.getName());
 
-        // Факультет
         if (dto.getFacultyId() != null) {
             FacultyEntity faculty = facultyService.get(dto.getFacultyId());
             entity.setFaculty(faculty);
         }
-        // Заведующий
         if (dto.getHeadId() != null) {
             UserEntity head = userService.get(dto.getHeadId());
             entity.setHead(head);
@@ -81,7 +78,6 @@ public class DepartmentMapper {
             throw new IllegalArgumentException("Head ID must not be null");
         }
 
-        // Инициализация коллекций
         entity.setClassrooms(new HashSet<>());
 
         return entity;

@@ -64,12 +64,12 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     public ClassroomEntity create(ClassroomEntity entity) {
         validate(entity, null);
         ClassroomEntity createdEntity = classroomRepository.save(entity);
-        // Отправка уведомлений о добавлении новой аудитории
+
         String message = String.format(
                 "Добавлена новая аудитория: %s",
                 createdEntity.getName()
         );
-        notificationService.sendNotificationToAll(message);
+        notificationService.sendNotificationToAdmins(message);
 
         return createdEntity;
     }
@@ -79,17 +79,36 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
     public ClassroomEntity update(long id, ClassroomEntity entity) {
         validate(entity, id);
         ClassroomEntity existsEntity = get(id);
+
+        String oldName = existsEntity.getName();
+
         existsEntity.setName(entity.getName());
         existsEntity.setCapacity(entity.getCapacity());
         existsEntity.setDepartment(entity.getDepartment());
         syncEquipments(existsEntity, entity.getEquipments());
-        return classroomRepository.save(existsEntity);
+
+        ClassroomEntity updated = classroomRepository.save(existsEntity);
+
+        String msgUpdate = String.format(
+                "Изменена аудитория: %s → %s",
+                oldName,
+                updated.getName()
+        );
+        notificationService.sendNotificationToAdmins(msgUpdate);
+
+        return updated;
     }
 
     @Transactional
     public ClassroomEntity delete(long id) {
         ClassroomEntity existsEntity = get(id);
+        String name = existsEntity.getName();
+
         classroomRepository.delete(existsEntity);
+
+        String msgDelete = String.format("Удалена аудитория: %s", name);
+        notificationService.sendNotificationToAdmins(msgDelete);
+
         return existsEntity;
     }
 
@@ -117,17 +136,14 @@ public class ClassroomService extends AbstractEntityService<ClassroomEntity> {
         Set<EquipmentEntity> currentEquipments = new HashSet<>(existsEntity.getEquipments());
         Set<EquipmentEntity> updatedEquipmentsCopy = new HashSet<>(updatedEquipments);
 
-        // Находим аудитории для удаления
         Set<EquipmentEntity> equipmentsToRemove = currentEquipments.stream()
                 .filter(classroom -> !updatedEquipmentsCopy.contains(classroom))
                 .collect(Collectors.toSet());
 
-        // Удаляем найденные аудитории
         for (EquipmentEntity equipment : equipmentsToRemove) {
             existsEntity.removeEquipment(equipment);
         }
 
-        // Добавляем новые или обновляем существующие аудитории
         for (EquipmentEntity equipment : updatedEquipmentsCopy) {
             if (!currentEquipments.contains(equipment)) {
                 existsEntity.addEquipment(equipment);

@@ -62,7 +62,6 @@ public class UserMapper {
                         .collect(Collectors.toList())
         );
 
-        dto.setEmailNotificationEnabled(entity.isEmailNotificationEnabled());
         dto.setWebNotificationEnabled(entity.isWebNotificationEnabled());
 
         return dto;
@@ -81,7 +80,6 @@ public class UserMapper {
         entity.setNotifications(new HashSet<>());
         entity.setSoftwareRequests(new HashSet<>());
         entity.setDepartments(new HashSet<>());
-        entity.setEmailNotificationEnabled(dto.isEmailNotificationEnabled());
         entity.setWebNotificationEnabled(dto.isWebNotificationEnabled());
 
 

@@ -65,39 +65,59 @@ public class DepartmentService extends AbstractEntityService<DepartmentEntity> {
         validate(entity, null);
         DepartmentEntity createdEntity = repository.save(entity);
 
-        // Отправка уведомлений о добавлении новой кафедры
         String message = String.format(
                 "Добавлена новая кафедра: %s",
                 createdEntity.getName()
         );
-        notificationService.sendNotificationToAll(message);
+        notificationService.sendNotificationToAdmins(message);
 
         return createdEntity;
     }
 
     @Transactional
-    public DepartmentEntity update(long id, DepartmentEntity entity) {
-        validate(entity, id);
-        final DepartmentEntity existsEntity = get(id);
-        existsEntity.setName(entity.getName());
-        existsEntity.setFaculty(entity.getFaculty());
-        if (entity.getHead() != null) {
-            existsEntity.setHead(entity.getHead());
-        } else {
-            throw new IllegalArgumentException("Head of the department must not be null during update");
+    public DepartmentEntity update(long id, DepartmentEntity dto) {
+        validate(dto, id);
+        DepartmentEntity existing = get(id);
+
+        // запомним старое имя (если переименовали)
+        String oldName = existing.getName();
+
+        existing.setName(dto.getName());
+
+        if (dto.getFaculty() == null) {
+            throw new IllegalArgumentException("Faculty must not be null");
+        }
+        existing.setFaculty(dto.getFaculty());
+
+        if (dto.getHead() == null) {
+            throw new IllegalArgumentException("Head of the department must not be null");
+        }
+        existing.setHead(dto.getHead());
+
+        if (dto.getClassrooms() != null) {
+            syncClassrooms(existing, dto.getClassrooms());
         }
 
-        if (entity.getClassrooms() != null && !entity.getClassrooms().isEmpty()) {
-            syncClassrooms(existsEntity, entity.getClassrooms());
-        }
+        DepartmentEntity updated = repository.save(existing);
 
-        return repository.save(existsEntity);
+        String msg = String.format(
+                "Изменена кафедра: %s → %s",
+                oldName,
+                updated.getName()
+        );
+        notificationService.sendNotificationToAdmins(msg);
+
+        return updated;
     }
 
     @Transactional
     public DepartmentEntity delete(long id) {
-        final DepartmentEntity existsEntity = get(id);
+        DepartmentEntity existsEntity = get(id);
+        String name = existsEntity.getName();
         repository.delete(existsEntity);
+
+        String msg = String.format("Удалена кафедра: %s", name);
+        notificationService.sendNotificationToAdmins(msg);
         return existsEntity;
     }
 

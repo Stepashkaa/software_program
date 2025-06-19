@@ -73,30 +73,50 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
         // Отправка уведомлений о добавлении нового ПО
         String message = String.format("Добавлено новое ПО: %s (версия: %s)",
                 createdEntity.getName(), createdEntity.getVersion());
-        notificationService.sendNotificationToAll(message);
+        notificationService.sendNotificationToAdmins(message);
 
         return createdEntity;
     }
 
     @Transactional
-    public SoftwareEntity update(long id, SoftwareEntity entity) {
-        validate(entity, id);
-        SoftwareEntity existsEntity = get(id);
+    public SoftwareEntity update(long id, SoftwareEntity dto) {
+        validate(dto, id);
+        SoftwareEntity existing = get(id);
 
-        existsEntity.setName(entity.getName());
-        existsEntity.setVersion(entity.getVersion());
-        existsEntity.setDescription(entity.getDescription());
-        existsEntity.setType(entity.getType());
+        // Сохраняем старые значения для уведомления
+        String oldName    = existing.getName();
+        String oldVersion = existing.getVersion();
 
-        return softwareRepository.save(existsEntity);
+        existing.setName(dto.getName());
+        existing.setVersion(dto.getVersion());
+        existing.setDescription(dto.getDescription());
+        existing.setType(dto.getType());
+
+        SoftwareEntity updated = softwareRepository.save(existing);
+
+        // Уведомление об обновлении
+        String msgUpdate = String.format(
+                "Изменено ПО: %s (версия: %s) → %s (версия: %s)",
+                oldName, oldVersion,
+                updated.getName(), updated.getVersion()
+        );
+        notificationService.sendNotificationToAdmins(msgUpdate);
+
+        return updated;
     }
+
     @Transactional
     public SoftwareEntity delete(Long id) {
         SoftwareEntity software = softwareRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new FileNotFoundException("ПО не найдено"));
 
+        // Сохраняем для уведомления
+        String name    = software.getName();
+        String version = software.getVersion();
+
         // Удаляем связи с этим ПО из всех EquipmentSoftwareEntity
-        List<EquipmentSoftwareEntity> affected = equipmentSoftwareRepo.findAllBySoftwaresContaining(software);
+        List<EquipmentSoftwareEntity> affected =
+                equipmentSoftwareRepo.findAllBySoftwaresContaining(software);
         for (EquipmentSoftwareEntity es : affected) {
             es.getSoftwares().remove(software);
             if (es.getSoftwares().isEmpty()) {
@@ -106,7 +126,16 @@ public class SoftwareService extends AbstractEntityService<SoftwareEntity> {
             }
         }
 
+        // Удаляем само ПО
         softwareRepository.delete(software);
+
+        // Уведомление об удалении
+        String msgDelete = String.format(
+                "Удалено ПО: %s (версия: %s)",
+                name, version
+        );
+        notificationService.sendNotificationToAdmins(msgDelete);
+
         return software;
     }
 

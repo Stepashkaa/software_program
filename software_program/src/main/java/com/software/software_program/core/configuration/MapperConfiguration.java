@@ -19,13 +19,11 @@ public class MapperConfiguration {
     ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
 
-        // ClassroomEntity -> ClassroomDto
         modelMapper.typeMap(ClassroomEntity.class, ClassroomDto.class).addMappings(mapper -> {
             mapper.skip(ClassroomDto::setEquipmentIds);
             mapper.skip(ClassroomDto::setEquipmentNames);
         });
 
-        // DepartmentEntity -> DepartmentDto
         modelMapper.typeMap(DepartmentEntity.class, DepartmentDto.class).addMappings(mapper -> {
             mapper.skip(DepartmentDto::setClassroomIds);
             mapper.skip(DepartmentDto::setClassroomNames);
@@ -33,13 +31,11 @@ public class MapperConfiguration {
             mapper.map(src -> src.getHead().getFullName(), DepartmentDto::setHeadName);
         });
 
-        // SoftwareEntity -> SoftwareDto
         modelMapper.typeMap(SoftwareEntity.class, SoftwareDto.class).addMappings(mapper -> {
             mapper.skip(SoftwareDto::setEquipmentIds);
             mapper.skip(SoftwareDto::setEquipmentNames);
         });
 
-        // SoftwareRequestEntity -> SoftwareRequestDto
         modelMapper.typeMap(SoftwareRequestEntity.class, SoftwareRequestDto.class).addMappings(mapper -> {
             mapper.map(src -> src.getUser().getFullName(), SoftwareRequestDto::setUserName);
         });

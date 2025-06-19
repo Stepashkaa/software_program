@@ -53,7 +53,6 @@ public class FacultyEntity extends BaseEntity {
             department.setFaculty(null);
         }
     }
-    // FacultyEntity.java
     @Override
     public int hashCode() {
         return Objects.hash(

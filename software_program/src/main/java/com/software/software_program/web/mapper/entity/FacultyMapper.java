@@ -47,11 +47,11 @@ public class FacultyMapper {
 
         if (dto.getDepartmentIds() != null && !dto.getDepartmentIds().isEmpty()) {
             Set<DepartmentEntity> departments = dto.getDepartmentIds().stream()
-                    .map(departmentService::get) // Получаем кафедры по ID
+                    .map(departmentService::get)
                     .collect(Collectors.toSet());
             entity.setDepartments(departments);
         } else {
-            entity.setDepartments(new HashSet<>()); // Если кафедры не указаны, оставляем пустой набор
+            entity.setDepartments(new HashSet<>());
         }
 
         return entity;

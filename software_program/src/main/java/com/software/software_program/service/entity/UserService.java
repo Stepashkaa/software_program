@@ -5,6 +5,7 @@ import com.software.software_program.core.error.NotFoundException;
 import com.software.software_program.core.utility.JwtUtils;
 import com.software.software_program.core.utility.ValidationUtils;
 import com.software.software_program.model.entity.*;
+import com.software.software_program.model.enums.UserRole;
 import com.software.software_program.repository.UserRepository;
 import com.software.software_program.web.dto.authentication.AuthResponseDto;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +29,8 @@ public class UserService extends AbstractEntityService<UserEntity> {
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtils jwtUtils;
+    private final NotificationService notificationService;
+
 
     @Transactional(readOnly = true)
     public List<UserEntity> getAll() {
@@ -48,63 +51,91 @@ public class UserService extends AbstractEntityService<UserEntity> {
                 .orElseThrow(() -> new NotFoundException(UserEntity.class, id));
     }
 
+    @Transactional
     public UserEntity create(UserEntity entity) {
         validate(entity, null);
         entity.setPhoneNumber(normalizePhoneNumber(entity.getPhoneNumber()));
         if (!entity.getPassword().startsWith("$2a$")) {
             entity.setPassword(passwordEncoder.encode(entity.getPassword()));
         }
-        return repository.save(entity);
+        UserEntity created = repository.save(entity);
+
+        String msgCreate = String.format(
+                "Добавлен новый пользователь: %s (email: %s)",
+                created.getFullName(),
+                created.getEmail()
+        );
+        notificationService.sendNotificationToAdmins(msgCreate);
+
+        return created;
     }
 
     @Transactional
-    public UserEntity update(long id, UserEntity entity) {
-        validate(entity, id);
-        final UserEntity existsEntity = get(id);
+    public UserEntity update(long id, UserEntity dto) {
+        validate(dto, id);
+        UserEntity exists = get(id);
 
-        existsEntity.setEmail(entity.getEmail());
-        existsEntity.setPhoneNumber(entity.getPhoneNumber());
-        existsEntity.setRole(entity.getRole());
-        existsEntity.setEmailNotificationEnabled(entity.isEmailNotificationEnabled());
-        existsEntity.setWebNotificationEnabled(entity.isWebNotificationEnabled());
+        exists.setEmail(dto.getEmail());
+        exists.setPhoneNumber(dto.getPhoneNumber());
+        exists.setRole(dto.getRole());
+        exists.setWebNotificationEnabled(dto.isWebNotificationEnabled());
 
-        // Обновляем пароль только если он не пустой
-        if (entity.getPassword() != null && !entity.getPassword().isBlank()) {
-            if (!entity.getPassword().startsWith("$2a$")) {
-                existsEntity.setPassword(passwordEncoder.encode(entity.getPassword()));
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            if (!dto.getPassword().startsWith("$2a$")) {
+                exists.setPassword(passwordEncoder.encode(dto.getPassword()));
             } else {
-                existsEntity.setPassword(entity.getPassword());
+                exists.setPassword(dto.getPassword());
             }
         }
 
-        syncDepartments(existsEntity, entity.getDepartments());
-        syncSoftwareRequests(existsEntity, entity.getSoftwareRequests());
+        syncDepartments(exists, dto.getDepartments());
+        syncSoftwareRequests(exists, dto.getSoftwareRequests());
 
-        return repository.save(existsEntity);
+        UserEntity updated = repository.save(exists);
+
+        String msgUpdate = String.format(
+                "Обновлён пользователь: %s (email: %s)",
+                updated.getFullName(),
+                updated.getEmail()
+        );
+        notificationService.sendNotificationToAdmins(msgUpdate);
+
+        return updated;
     }
 
-    public Long getUserIdFromPrincipal(Principal principal) {
-        UserEntity user = repository.findByEmail(principal.getName())
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-        return user.getId();
+    @Transactional
+    public UserEntity delete(long id) {
+        UserEntity exists = get(id);
+        String name = exists.getFullName();
+        String email = exists.getEmail();
+
+        for (DepartmentEntity dept : exists.getDepartments()) {
+            dept.setHead(null);
+        }
+
+        repository.delete(exists);
+
+        String msgDelete = String.format(
+                "Удалён пользователь: %s (email: %s)",
+                name,
+                email
+        );
+        notificationService.sendNotificationToAdmins(msgDelete);
+
+        return exists;
     }
+
+//    public Long getUserIdFromPrincipal(Principal principal) {
+//        UserEntity user = repository.findByEmail(principal.getName())
+//                .orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+//        return user.getId();
+//    }
 
 
     public UserEntity findByEmail(String email) {
         return repository.findByEmail(email).orElse(null);
     }
 
-    @Transactional
-    public UserEntity delete(long id) {
-        final UserEntity existsEntity = get(id);
-
-        for (DepartmentEntity department : existsEntity.getDepartments()) {
-            department.setHead(null);
-        }
-
-        repository.delete(existsEntity);
-        return existsEntity;
-    }
 
     public UserEntity register(UserEntity user) {
         if (repository.findByEmail(user.getEmail()).isPresent()) {
@@ -133,6 +164,19 @@ public class UserService extends AbstractEntityService<UserEntity> {
         dto.setRole(user.getRole());
 
         return dto;
+    }
+
+    public boolean isAdmin(Principal principal) {
+        UserEntity user = repository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+        // Вот здесь сравниваем enum с enum
+        return user.getRole() == UserRole.ADMIN;
+    }
+
+    public Long getUserIdFromPrincipal(Principal principal) {
+        UserEntity user = repository.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+        return user.getId();
     }
 
     @Override
@@ -183,7 +227,6 @@ public class UserService extends AbstractEntityService<UserEntity> {
     private void syncSoftwareRequests(UserEntity user, Set<SoftwareRequestEntity> updatedRequests) {
         Set<SoftwareRequestEntity> currentRequests = new HashSet<>(user.getSoftwareRequests());
 
-        // Удаление старых заявок
         Set<SoftwareRequestEntity> toRemove = currentRequests.stream()
                 .filter(existing -> updatedRequests.stream().noneMatch(updated ->
                         Objects.equals(updated.getId(), existing.getId())))
@@ -193,7 +236,6 @@ public class UserService extends AbstractEntityService<UserEntity> {
             user.removeSoftwareRequest(request);
         }
 
-        // Добавление новых заявок
         for (SoftwareRequestEntity updated : updatedRequests) {
             boolean exists = currentRequests.stream().anyMatch(existing ->
                     Objects.equals(updated.getId(), existing.getId()));

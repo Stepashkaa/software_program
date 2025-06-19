@@ -91,31 +91,6 @@ public class ReportController {
         return usageInfos;
     }
 
-//    @PostMapping("/coverage/by-department/paged")
-//    public PageDto<SoftwareUsageInfo> getUsagePaged(
-//            @RequestParam String periodStart,
-//            @RequestParam String periodEnd,
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = Constants.DEFAULT_PAGE_SIZE) int size
-//    ) {
-//        Date from = Formatter.parse(periodStart);
-//        Date to = Formatter.parse(periodEnd);
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<SoftwareUsageInfo> usagePage = service.getUsageInfoPaged(from, to, pageable);
-//        return PageDtoMapper.toDto(usagePage, Function.identity());
-//    }
-//
-//    @PostMapping("/coverage/grouped/paged")
-//    public PageDto<SoftwareCoverageInfo> getCoveragePaged(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = Constants.DEFAULT_PAGE_SIZE) int size
-//    ) {
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<SoftwareCoverageInfo> coveragePage = service.getCoverageInfoPaged(pageable);
-//        return PageDtoMapper.toDto(coveragePage, Function.identity());
-//    }
-
-
     private JasperPrint getJasperPrint(ReportType reportType, ReportDto reportDto, boolean ignorePagination) throws JRException {
         return switch (reportType) {
             case SOFTWARE_REQUEST_FORM -> service.generateSoftwareRequestReport(reportDto, ignorePagination);

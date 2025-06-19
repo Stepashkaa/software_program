@@ -30,18 +30,35 @@ public class SoftwareRequestController {
     @GetMapping
     public Page<SoftwareRequestDto> getAllByFilters(
             @RequestParam(name = "status", required = false) RequestStatus status,
-            @RequestParam(name = "userId", required = false) Long userId,
-            Pageable pageable
+            @RequestParam(name = "userId", required = false) Long userIdParam,
+            Pageable pageable,
+            Principal principal
     ) {
-        return softwareRequestService.getAllByFilters(status, userId, pageable)
+        Long currentUserId = userService.getUserIdFromPrincipal(principal);
+
+        // если не админ — непрерывно перезаписываем фильтр, чтобы отдавать только свои заявки
+        Long userIdToFilter = userService.isAdmin(principal)
+                ? userIdParam    // админ может смотреть чужие (или все, если null)
+                : currentUserId; // преподаватель — только свои
+
+        return softwareRequestService
+                .getAllByFilters(status, userIdToFilter, pageable)
                 .map(softwareRequestMapper::toDto);
     }
+
+    // --- Без пагинации (для экспорта/прочего) ---
     @GetMapping("/all")
     public List<SoftwareRequestDto> getAll(
             @RequestParam(name = "status", required = false) RequestStatus status,
-            @RequestParam(name = "userId", required = false) Long userId
+            @RequestParam(name = "userId", required = false) Long userIdParam,
+            Principal principal
     ) {
-        return softwareRequestService.getAll(status, userId).stream()
+        Long currentUserId = userService.getUserIdFromPrincipal(principal);
+        Long userIdToFilter = userService.isAdmin(principal)
+                ? userIdParam
+                : currentUserId;
+
+        return softwareRequestService.getAll(status, userIdToFilter).stream()
                 .map(softwareRequestMapper::toDto)
                 .toList();
     }

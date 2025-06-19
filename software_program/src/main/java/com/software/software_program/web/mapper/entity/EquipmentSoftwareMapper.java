@@ -26,7 +26,6 @@ public class EquipmentSoftwareMapper {
 
         dto.setId(entity.getId());
 
-        // Защита от LazyInitializationException
         if (entity.getEquipment() != null) {
             dto.setEquipmentId(entity.getEquipment().getId());
             try {

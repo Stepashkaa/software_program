@@ -40,20 +40,15 @@ public class NotificationController {
         return Map.of("webNotificationEnabled", u.isWebNotificationEnabled());
     }
 
-    /**
-     * Включить/отключить веб-уведомления
-     */
     @PutMapping("/{id}/notifications/setting")
     public Map<String, Boolean> updateWebNotificationSetting(
             @PathVariable("id") Long id,
             @RequestBody Map<String, Boolean> body
     ) {
         boolean enabled = Boolean.TRUE.equals(body.get("webNotificationEnabled"));
-        // загружаем существующую сущность
         UserEntity u = userService.get(id);
         u.setWebNotificationEnabled(enabled);
-        // сохраняем через сервис
-        UserEntity updated = userService.update(id, u);  // <-- вместо save(...)
+        UserEntity updated = userService.update(id, u);
         return Map.of("webNotificationEnabled", updated.isWebNotificationEnabled());
     }
 
@@ -63,18 +58,14 @@ public class NotificationController {
             @RequestParam String message,
             @RequestParam Long userId
     ) {
-        // 1) достаём пользователя
         UserEntity user = userService.get(userId);
-        // 2) отсылаем нотификацию
         NotificationEntity sent = notificationService.sendNotification(message, user);
         if (sent == null) {
-            // можно вернуть 204 No Content, или 400 Bad Request с сообщением
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "У пользователя отключены веб-уведомления"
             );
         }
-        // 3) мапим в DTO
         return notificationMapper.toDto(sent);
     }
 

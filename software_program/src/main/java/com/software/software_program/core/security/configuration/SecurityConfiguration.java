@@ -50,6 +50,8 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/auth/logout").permitAll()
                         .requestMatchers("/api/admin/report/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/admin/department").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers( "/api/admin/equipment/**").hasAnyRole("ADMIN", "TEACHER")
+                        .requestMatchers( "/api/admin/software/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/admin/software-request/**").hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/api/admin/software/types").hasAnyRole("ADMIN","TEACHER")
                         .requestMatchers("/api/admin/notification/**").hasAnyRole("ADMIN","TEACHER")

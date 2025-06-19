@@ -66,7 +66,6 @@ public class AuthenticationController {
         dto.setRole(user.getRole());
 
         // флаги уведомлений
-        dto.setEmailNotificationEnabled(user.isEmailNotificationEnabled());
         dto.setWebNotificationEnabled(user.isWebNotificationEnabled());
 
         // уведомления
@@ -108,14 +107,12 @@ public class AuthenticationController {
         return dto;
     }
 
-    /** Получить своё текущее состояние флага */
     @GetMapping("/me/notifications/setting")
     public Map<String, Boolean> getMyWebNotificationSetting(Principal principal) {
         UserEntity me = userService.findByEmail(principal.getName());
         return Map.of("webNotificationEnabled", me.isWebNotificationEnabled());
     }
 
-    /** Переключить своё веб-уведомление */
     @PutMapping("/me/notifications/setting")
     public Map<String, Boolean> updateMyWebNotificationSetting(
             Principal principal,
@@ -127,8 +124,6 @@ public class AuthenticationController {
         UserEntity updated = userService.update(me.getId(), me);
         return Map.of("webNotificationEnabled", updated.isWebNotificationEnabled());
     }
-
-
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDto> login(@RequestBody AuthRequestDto dto) {
@@ -160,7 +155,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(dto);
     }
 
-    // ✅ Новый метод для выхода
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest request, HttpServletResponse response) {
         SecurityContextHolder.clearContext();

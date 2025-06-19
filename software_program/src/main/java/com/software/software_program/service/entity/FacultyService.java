@@ -55,7 +55,7 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
                 "Добавлен новый факультет: %s",
                 createdEntity.getName()
         );
-        notificationService.sendNotificationToAll(message);
+        notificationService.sendNotificationToAdmins(message);
 
         return createdEntity;
     }
@@ -65,22 +65,37 @@ public class FacultyService extends AbstractEntityService<FacultyEntity> {
     public FacultyEntity update(long id, FacultyEntity entity) {
         validate(entity, id);
         FacultyEntity existsEntity = get(id);
-        // Обновляем только те поля, которые были переданы
+
+        String oldName = existsEntity.getName();
+
         if (entity.getName() != null) {
             existsEntity.setName(entity.getName());
         }
-
-        // Синхронизируем кафедры, если они были переданы
         if (entity.getDepartments() != null) {
             syncDepartments(existsEntity, entity.getDepartments());
         }
-        return facultyRepository.save(existsEntity);
+
+        FacultyEntity updated = facultyRepository.save(existsEntity);
+        String msgUpdate = String.format(
+                "Изменён факультет: %s → %s",
+                oldName,
+                updated.getName()
+        );
+        notificationService.sendNotificationToAdmins(msgUpdate);
+
+        return updated;
     }
 
     @Transactional
     public FacultyEntity delete(long id) {
         FacultyEntity existsEntity = get(id);
+        String name = existsEntity.getName();
         facultyRepository.delete(existsEntity);
+        String msgDelete = String.format(
+                "Удалён факультет: %s",
+                name
+        );
+        notificationService.sendNotificationToAdmins(msgDelete);
         return existsEntity;
     }
 

@@ -2,8 +2,12 @@ package com.software.software_program.service.entity;
 
 import com.software.software_program.model.entity.NotificationEntity;
 import com.software.software_program.model.entity.UserEntity;
+import com.software.software_program.model.enums.UserRole;
 import com.software.software_program.repository.NotificationRepository;
+import com.software.software_program.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,36 +19,27 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
-    private final UserService userService;
+    private final  UserRepository userRepository;
+
 
     private NotificationEntity get(long id) {
         return notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
     }
 
-//    @Transactional
-//    public NotificationEntity sendNotification(String message, UserEntity user) {
-//        validate(message, user);
-//        NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
-//        return notificationRepository.save(entity);
-//    }
-
     @Transactional
-    public List<NotificationEntity> sendNotificationToAll(String message) {
-        validate(message); // Проверка сообщения
-        List<UserEntity> allUsers = userService.getAll(); // Получаем всех пользователей
-        return allUsers.stream()
-                .map(user -> {
-                    NotificationEntity entity = new NotificationEntity(message, LocalDateTime.now(), user, false);
-                    return notificationRepository.save(entity);
-                })
+    public List<NotificationEntity> sendNotificationToAdmins(String message) {
+        validate(message);
+        List<UserEntity> admins = userRepository.findByRole(UserRole.ADMIN);
+        return admins.stream()
+                .map(user -> new NotificationEntity(message, LocalDateTime.now(), user, false))
+                .map(notificationRepository::save)
                 .toList();
     }
 
     @Transactional
     public NotificationEntity sendNotification(String message, UserEntity user) {
         validate(message, user);
-        // если веб-уведомления отключены — не сохраняем
         if (!user.isWebNotificationEnabled()) {
             return null;
         }

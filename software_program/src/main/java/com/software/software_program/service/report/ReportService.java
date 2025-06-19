@@ -44,16 +44,13 @@ public class ReportService {
         return JasperFillManager.fillReport(
                 jasperReport,
                 params,
-                new JRBeanCollectionDataSource(requestsInfo)  // <-- вот он, основной источник!
+                new JRBeanCollectionDataSource(requestsInfo)
         );
     }
 
     public JasperPrint generateSoftwareCoverageReport(ReportDto reportDto, boolean ignorePagination) throws JRException {
         JasperReport jasperReport = JasperCompileManager.compileReport(
                 getReportTemplateStream("SoftwareCoverage.jrxml"));
-
-//        List<ClassroomEntity> classrooms = classroomService.getByIds(reportDto.getClassroomIds());
-//        List<SoftwareCoverageInfo> coverageInfo = getCoverageInfo(classrooms);
 
         List<SoftwareCoverageInfo> coverageInfo = getCoverageInfo(
                 reportDto.getClassroomIds() != null && !reportDto.getClassroomIds().isEmpty()
@@ -101,13 +98,13 @@ public class ReportService {
                     SoftwareRequestInfo info = new SoftwareRequestInfo();
 
                     // Оборудование
-                    info.setSerialNumber(item.getSerialNumber());              // Инв. номер
-                    info.setEquipmentName(item.getEquipmentName());       // Описание ПК
+                    info.setSerialNumber(item.getSerialNumber());
+                    info.setEquipmentName(item.getEquipmentName());
 
                     // ПО
-                    info.setSoftwareName(item.getSoftwareName());               // Название ПО
-                    info.setSoftwareDescription(item.getSoftwareDescription()); // Описание ПО
-                    info.setSoftwareType(item.getSoftwareType());               // Тип ПО
+                    info.setSoftwareName(item.getSoftwareName());
+                    info.setSoftwareDescription(item.getSoftwareDescription());
+                    info.setSoftwareType(item.getSoftwareType());
 
                     // Наличие ПО (по совпадению имени и описания в базе)
                     boolean exists = allSoftware.stream().anyMatch(software ->
@@ -214,24 +211,6 @@ public class ReportService {
             return info;
         }).collect(Collectors.toList());
     }
-
-//    public Page<SoftwareCoverageInfo> getCoverageInfoPaged(Pageable pageable) {
-//        List<ClassroomEntity> classrooms = classroomService.getAll();
-//        List<SoftwareCoverageInfo> all = getCoverageInfo(classrooms);
-//        int start = (int) pageable.getOffset();
-//        int end = Math.min((start + pageable.getPageSize()), all.size());
-//        List<SoftwareCoverageInfo> paged = all.subList(start, end);
-//        return new PageImpl<>(paged, pageable, all.size());
-//    }
-//
-//    public Page<SoftwareUsageInfo> getUsageInfoPaged(Date from, Date to, Pageable pageable) {
-//        List<DepartmentEntity> departments = departmentService.getAll();
-//        List<SoftwareUsageInfo> all = getUsageInfo(departments, from, to);
-//        int start = (int) pageable.getOffset();
-//        int end = Math.min((start + pageable.getPageSize()), all.size());
-//        List<SoftwareUsageInfo> paged = all.subList(start, end);
-//        return new PageImpl<>(paged, pageable, all.size());
-//    }
 
     private boolean checkCoverage(ClassroomEntity classroom) {
         return classroom.getEquipments().stream()

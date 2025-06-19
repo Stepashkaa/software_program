@@ -65,7 +65,6 @@ public class SoftwareController {
                 .toList();
     }
 
-
     @GetMapping("/filter")
     public List<SoftwareDto> filterByVersion(
             @RequestParam(name = "version") String version
@@ -74,7 +73,6 @@ public class SoftwareController {
                 .map(softwareMapper::toDto)
                 .toList();
     }
-
 
     @GetMapping("/all")
     public List<SoftwareDto> getAll(

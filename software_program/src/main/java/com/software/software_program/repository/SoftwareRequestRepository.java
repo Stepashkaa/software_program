@@ -19,12 +19,8 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
 
     List<SoftwareRequestEntity> findByUser(UserEntity user);
 
-    // Choose one of these two options:
-
-    // Option 1: Use UserEntity
     List<SoftwareRequestEntity> findByStatusAndUser(RequestStatus status, UserEntity user);
 
-    // OR Option 2: Use userId
     List<SoftwareRequestEntity> findByStatusAndUserId(RequestStatus status, Long userId);
 
     List<SoftwareRequestEntity> findByUserId(Long userId);
@@ -40,13 +36,4 @@ public interface SoftwareRequestRepository extends JpaRepository<SoftwareRequest
             Pageable pageable
     );
 
-//    @Query("SELECT sr FROM SoftwareRequestEntity sr WHERE " +
-//            "sr.user.id = :userId AND " +
-//            "sr.equipment.id = :equipmentId AND " +
-//            "sr.requestDate = :requestDate")
-//    Optional<SoftwareRequestEntity> findByUserEquipmentAndDate(
-//            @Param("userId") Long userId,
-//            @Param("equipmentId") Long equipmentId,
-//            @Param("requestDate") Date requestDate
-//    );
 }

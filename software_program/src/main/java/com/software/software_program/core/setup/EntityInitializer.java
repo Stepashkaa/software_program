@@ -156,21 +156,18 @@ public class EntityInitializer {
 
     @Loggable
     private void associateEquipmentSoftware(List<EquipmentEntity> equipments, List<SoftwareEntity> softwares) {
-        // Например: на проектор — Office и AutoCAD
         equipmentSoftwareService.create(new EquipmentSoftwareEntity(
                 equipments.get(0),
                 Set.of(softwares.get(0), softwares.get(2)), // Microsoft Office, AutoCAD
                 new Date()
         ));
 
-        // На компьютер — IntelliJ IDEA и AutoCAD
         equipmentSoftwareService.create(new EquipmentSoftwareEntity(
                 equipments.get(1),
                 Set.of(softwares.get(1), softwares.get(2)), // IntelliJ IDEA, AutoCAD
                 new Date()
         ));
 
-        // На интерактивную доску — только Microsoft Office
         equipmentSoftwareService.create(new EquipmentSoftwareEntity(
                 equipments.get(2),
                 Set.of(softwares.get(0)), // Microsoft Office
@@ -186,17 +183,20 @@ public class EntityInitializer {
             SoftwareRequestEntity request = new SoftwareRequestEntity();
             request.setRequestDate(new Date());
             request.setDescription("Автоматически созданная тестовая заявка");
-            request.setUser(users.get(0)); // Первый созданный пользователь (например, админ)
-            request.setStatus(RequestStatus.PENDING); // можно не указывать — выставляется по умолчанию
+            request.setUser(users.get(0));
+            request.setStatus(RequestStatus.PENDING);
 
             List<SoftwareRequestItemEntity> items = new ArrayList<>();
 
             items.add(createRequestItem("Компьютер", "PC67890", "IntelliJ IDEA", "IDE для Java", "GPL", "Да"));
             items.add(createRequestItem("Компьютер", "PC67890", "IntelliJ2 IDEA2", "IDE для Java2", "GPL", "Нет"));
             items.add(createRequestItem("Компьютер2", "PC67899", "IntelliJ3 IDEA3", "IDE для Java3", "GPL", "Нет"));
+            items.add(createRequestItem("Компьютер3", "PC67892", "IntelliJ IDEA", "IDE для Java", "GPL", "Да"));
+            items.add(createRequestItem("Компьютер3", "PC67892", "IntelliJ2 IDEA2", "IDE для Java2", "GPL", "Нет"));
+            items.add(createRequestItem("Компьютер3", "PC67892", "IntelliJ3 IDEA3", "IDE для Java3", "GPL", "Нет"));
 
             for (SoftwareRequestItemEntity item : items) {
-                item.setRequest(request); // установить обратную связь
+                item.setRequest(request);
             }
 
             request.setRequestItems(items);
@@ -229,7 +229,6 @@ public class EntityInitializer {
             admin.setPassword(passwordEncoder.encode(appConfigurationProperties.getAdmin().getPassword()));
             admin.setPhoneNumber(appConfigurationProperties.getAdmin().getNumber());
             admin.setRole(UserRole.ADMIN);
-            admin.setEmailNotificationEnabled(true);
             admin.setWebNotificationEnabled(true);
 
             users.add(userService.create(admin));

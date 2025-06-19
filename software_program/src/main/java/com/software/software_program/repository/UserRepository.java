@@ -2,6 +2,7 @@ package com.software.software_program.repository;
 
 import com.software.software_program.model.entity.ClassroomEntity;
 import com.software.software_program.model.entity.UserEntity;
+import com.software.software_program.model.enums.UserRole;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<UserEntity, Long>, PagingAndSortingRepository<UserEntity, Long> {
@@ -16,4 +18,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long>, PagingA
     Optional<UserEntity> findByEmail(String email);
     Page<UserEntity> findByFullNameContainingIgnoreCase(String fullName, Pageable pageable);
 
+    List<UserEntity> findByRole(UserRole role);
 }

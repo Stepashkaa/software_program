@@ -44,9 +44,6 @@ public class UserEntity extends BaseEntity {
     private LocalDateTime createdAt;
 
     @Column(nullable = false, columnDefinition = "boolean default false")
-    private boolean emailNotificationEnabled = false;
-
-    @Column(nullable = false, columnDefinition = "boolean default false")
     private boolean webNotificationEnabled = false;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

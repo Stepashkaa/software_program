@@ -81,57 +81,55 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
 
     @Transactional
     public SoftwareRequestEntity update(long id, RequestStatus status, String description) {
+        SoftwareRequestEntity existing = get(id);
+
+        boolean needNotifyStatus = status != null && status != existing.getStatus();
+        boolean needNotifyDescription = description != null && !description.equals(existing.getDescription());
+
         if (description != null) {
             validateStringField(description, "Description");
+            existing.setDescription(description);
         }
-
-        SoftwareRequestEntity existsEntity = get(id);
-
         if (status != null) {
-            existsEntity.setStatus(status);
-
-            if (existsEntity.getUser() == null) {
-                throw new IllegalArgumentException("User must not be null");
-            }
-
-            String message = String.format("Статус вашей заявки изменен на '%s'", status);
-            notificationService.sendNotification(message, existsEntity.getUser());
+            existing.setStatus(status);
         }
 
-        if (description != null) {
-            existsEntity.setDescription(description);
+        SoftwareRequestEntity updated = softwareRequestRepo.save(existing);
+
+        if (needNotifyStatus) {
+            String msg = String.format("Статус вашей заявки №%d изменён на «%s».", id, updated.getStatus());
+            notificationService.sendNotification(msg, updated.getUser());
+        }
+        if (needNotifyDescription) {
+            String msg = String.format("Описание вашей заявки №%d было обновлено.", id);
+            notificationService.sendNotification(msg, updated.getUser());
         }
 
-        SoftwareRequestEntity exists = get(id);
-        if (status != null) {
-            exists.setStatus(status);
-            SoftwareRequestEntity updated = softwareRequestRepo.save(exists);
-
-            // уведомляем пользователя о смене статуса
-            notificationService.sendNotification(
-                    "Статус вашей заявки №" + id + " изменён на «" + status + "».",
-                    updated.getUser()
-            );
-            return updated;
-        }
-
-        validate(existsEntity, id);
-        return softwareRequestRepo.save(existsEntity);
+        return updated;
     }
 
     @Transactional
     public SoftwareRequestEntity delete(long id) {
-        SoftwareRequestEntity existsEntity = get(id);
-        softwareRequestRepo.delete(existsEntity);
-        return existsEntity;
+        SoftwareRequestEntity existing = get(id);
+        Long requestId = existing.getId();
+        UserEntity user = existing.getUser();
+
+        softwareRequestRepo.delete(existing);
+
+        String msg = String.format("Ваша заявка №%d была удалена.", requestId);
+        notificationService.sendNotification(msg, user);
+
+        return existing;
     }
+
 
     @Override
     protected void validate(SoftwareRequestEntity entity, Long id) {
         if (entity == null) throw new IllegalArgumentException("Entity is null");
 
-        if (entity.getRequestDate() == null || entity.getRequestDate().after(new Date())) {
-            throw new IllegalArgumentException("Invalid request date");
+        Date now = new Date();
+        if (entity.getRequestDate() == null || entity.getRequestDate().after(now)) {
+            throw new IllegalArgumentException("Дата запроса не должна быть пустой или в будущем");
         }
 
         validateStringField(entity.getDescription(), "Description");
@@ -140,16 +138,29 @@ public class SoftwareRequestService extends AbstractEntityService<SoftwareReques
             throw new IllegalArgumentException("User is required");
         }
 
-        if (entity.getRequestItems() == null || entity.getRequestItems().isEmpty()) {
-            throw new IllegalArgumentException("Request must contain at least one equipment+software item");
+        List<SoftwareRequestItemEntity> items = entity.getRequestItems();
+        if (items == null || items.isEmpty()) {
+            throw new IllegalArgumentException("Заявка должна содержать хотя бы один пункт");
         }
+        Set<String> seen = new HashSet<>();
+        for (SoftwareRequestItemEntity item : items) {
+            if (item.getEquipmentName() == null || item.getEquipmentName().isBlank())
+                throw new IllegalArgumentException("У каждого пункта должно быть имя оборудования");
+            if (item.getSoftwareName() == null || item.getSoftwareName().isBlank())
+                throw new IllegalArgumentException("У каждого пункта должно быть имя ПО");
 
-        for (SoftwareRequestItemEntity item : entity.getRequestItems()) {
-            if (item.getEquipmentName() == null || item.getEquipmentName().isBlank()) {
-                throw new IllegalArgumentException("Equipment name is required in each item");
+            // проверка длины названий
+            if (item.getEquipmentName().length() > 100 || item.getSoftwareName().length() > 100) {
+                throw new IllegalArgumentException("Имя оборудования и ПО не должны превышать 100 символов");
             }
-            if (item.getSoftwareName() == null || item.getSoftwareName().isBlank()) {
-                throw new IllegalArgumentException("Software name is required in each item");
+
+            // дублирование
+            String key = item.getEquipmentName().trim().toLowerCase() + "::" +
+                    item.getSoftwareName().trim().toLowerCase();
+            if (!seen.add(key)) {
+                throw new IllegalArgumentException(
+                        "Дублирующийся пункт в заявке: " + item.getEquipmentName() + " / " + item.getSoftwareName()
+                );
             }
         }
     }

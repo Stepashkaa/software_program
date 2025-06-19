@@ -31,29 +31,11 @@
 
     <group name="EquipmentGroup">
         <groupExpression><![CDATA[$F{serialNumber}]]></groupExpression>
-        <groupHeader>
-            <band height="20">
-                <!-- Серийный номер -->
-                <textField>
-                    <reportElement x="0" y="0" width="80" height="20">
-                    </reportElement>
-                    <box><pen lineWidth="1.0"/></box>
-                    <textElement textAlignment="Center" verticalAlignment="Middle">
-                        <font fontName="dejavu-sans" size="12"/>
-                    </textElement>
-                    <textFieldExpression><![CDATA[$F{serialNumber}]]></textFieldExpression>
-                </textField>
-                <!-- Название оборудования -->
-                <textField>
-                    <reportElement x="80" y="0" width="140" height="20">
 
-                    </reportElement>
-                    <box><pen lineWidth="1.0"/></box>
-                    <textElement textAlignment="Left" verticalAlignment="Middle">
-                        <font fontName="dejavu-sans" size="12"/>
-                    </textElement>
-                    <textFieldExpression><![CDATA[$F{equipmentName}]]></textFieldExpression>
-                </textField>
+        <groupHeader>
+
+            <band height="0">
+
             </band>
         </groupHeader>
     </group>
@@ -243,7 +225,45 @@
     <detail>
         <band height="20">
             <!-- Инв. № -->
+            <!-- Инв. № -->
+            <rectangle>
+                <reportElement x="0" y="0" width="80" height="20"/>
+                <graphicElement>
+                    <pen lineWidth="1.0"/>
+                </graphicElement>
+                <!-- либо прямо так, либо добавьте -->
+                <!-- <printWhenExpression><![CDATA[Boolean.TRUE]]></printWhenExpression> -->
+            </rectangle>
+            <textField>
+                <!-- переносим атрибут внутрь reportElement -->
+                <reportElement x="0" y="0" width="80" height="20"
+                               isPrintRepeatedValues="false">
 
+                </reportElement>
+                <box><pen lineWidth="1.0"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="dejavu-sans" size="12"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{serialNumber}]]></textFieldExpression>
+            </textField>
+
+            <!-- Оборудование -->
+            <rectangle>
+                <reportElement x="80" y="0" width="140" height="20"/>
+                <graphicElement><pen lineWidth="1.0"/></graphicElement>
+            </rectangle>
+            <textField>
+                <reportElement x="80" y="0" width="140" height="20" isPrintRepeatedValues="false">
+
+                </reportElement>
+                <box>
+                    <pen lineWidth="1.0"/>
+                </box><textElement textAlignment="Center" verticalAlignment="Middle">
+                <font fontName="dejavu-sans" size="12"/>
+            </textElement>
+
+                <textFieldExpression><![CDATA[$F{equipmentName}]]></textFieldExpression>
+            </textField>
             <!-- № ПО -->
             <textField>
                 <reportElement x="220" y="0" width="20" height="20">

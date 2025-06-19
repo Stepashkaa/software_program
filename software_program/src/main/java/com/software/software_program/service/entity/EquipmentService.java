@@ -58,7 +58,7 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
                 "Добавлено новое аборудование: %s",
                 createdEntity.getName()
         );
-        notificationService.sendNotificationToAll(message);
+        notificationService.sendNotificationToAdmins(message);
 
         return createdEntity;
     }
@@ -67,6 +67,7 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     public EquipmentEntity update(long id, EquipmentEntity entity) {
         validate(entity, id);
         EquipmentEntity existsEntity = get(id);
+        String oldName = existsEntity.getName();
 
         existsEntity.setName(entity.getName());
         existsEntity.setType(entity.getType());
@@ -75,7 +76,16 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
 
         syncEquipmentSoftwares(existsEntity, entity.getEquipmentSoftwares());
 
-        return equipmentRepository.save(existsEntity);
+        EquipmentEntity updated = equipmentRepository.save(existsEntity);
+
+        String msgUpdate = String.format(
+                "Изменено оборудование: %s → %s",
+                oldName,
+                updated.getName()
+        );
+        notificationService.sendNotificationToAdmins(msgUpdate);
+
+        return updated;
     }
 
 
@@ -95,7 +105,11 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
     @Transactional
     public EquipmentEntity delete(long id) {
         EquipmentEntity existsEntity = get(id);
+        String name = existsEntity.getName();
         equipmentRepository.delete(existsEntity);
+        String msgDelete = String.format("Удалено оборудование: %s", name);
+        notificationService.sendNotificationToAdmins(msgDelete);
+
         return existsEntity;
     }
 
@@ -114,6 +128,15 @@ public class EquipmentService extends AbstractEntityService<EquipmentEntity> {
                     String.format("Equipment %s already exists", entity.getName())
             );
         }
+        // Уникальность серийного номера
+        equipmentRepository.findBySerialNumberIgnoreCase(entity.getSerialNumber())
+                .filter(e -> !e.getId().equals(id))
+                .ifPresent(e -> {
+                    throw new IllegalArgumentException(
+                            String.format("Equipment with serial number '%s' already exists", entity.getSerialNumber())
+                    );
+                });
+
 
         if (entity.getClassroom() == null) {
             throw new IllegalArgumentException("Classroom must not be null");
